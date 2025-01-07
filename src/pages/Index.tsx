@@ -9,6 +9,7 @@ import { MostDiscussed } from "@/components/MostDiscussed";
 import { BreakingOpinions } from "@/components/BreakingOpinions";
 import { WeeklyHighlights } from "@/components/WeeklyHighlights";
 import { OpinionPolls } from "@/components/OpinionPolls";
+import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
 
 const featuredArticle = {
@@ -101,6 +102,7 @@ const Index = () => {
         <CategorySection />
         <MostDiscussed />
       </main>
+      <Footer />
     </div>
   );
 };
