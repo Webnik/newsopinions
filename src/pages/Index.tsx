@@ -6,6 +6,9 @@ import { CategorySection } from "@/components/CategorySection";
 import { EditorsPicks } from "@/components/EditorsPicks";
 import { RegionalPerspectives } from "@/components/RegionalPerspectives";
 import { MostDiscussed } from "@/components/MostDiscussed";
+import { BreakingOpinions } from "@/components/BreakingOpinions";
+import { WeeklyHighlights } from "@/components/WeeklyHighlights";
+import { OpinionPolls } from "@/components/OpinionPolls";
 import { Link } from "react-router-dom";
 
 const featuredArticle = {
@@ -59,33 +62,43 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 space-y-12">
+        {/* Breaking Opinions Banner */}
+        <BreakingOpinions />
+        
+        {/* Featured Opinion */}
         <section className="mb-12">
           <Link to="/article/featured">
             <FeaturedOpinion {...featuredArticle} />
           </Link>
         </section>
         
+        {/* Main Content Grid */}
         <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <h2 className="font-serif text-3xl font-bold mb-8">Latest Opinions</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {articles.map((article) => (
-                <Link key={article.id} to={`/article/${article.id}`}>
-                  <ArticleCard {...article} />
-                </Link>
-              ))}
-            </div>
+          <div className="lg:col-span-2 space-y-12">
+            <section>
+              <h2 className="font-serif text-3xl font-bold mb-8">Latest Opinions</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {articles.map((article) => (
+                  <Link key={article.id} to={`/article/${article.id}`}>
+                    <ArticleCard {...article} />
+                  </Link>
+                ))}
+              </div>
+            </section>
+            
+            <EditorsPicks />
+            <RegionalPerspectives />
           </div>
           
           <div className="space-y-8">
             <TrendingOpinions />
+            <WeeklyHighlights />
+            <OpinionPolls />
           </div>
         </div>
 
         <CategorySection />
-        <EditorsPicks />
-        <RegionalPerspectives />
         <MostDiscussed />
       </main>
     </div>
