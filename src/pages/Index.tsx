@@ -1,6 +1,8 @@
 import { Navigation } from "@/components/Navigation";
 import { FeaturedOpinion } from "@/components/FeaturedOpinion";
 import { ArticleCard } from "@/components/ArticleCard";
+import { TrendingOpinions } from "@/components/TrendingOpinions";
+import { CategorySection } from "@/components/CategorySection";
 
 const featuredArticle = {
   title: "The Real Impact of AI on Modern Journalism",
@@ -55,14 +57,22 @@ const Index = () => {
           <FeaturedOpinion {...featuredArticle} />
         </section>
         
-        <section>
-          <h2 className="font-serif text-3xl font-bold mb-8">Latest Opinions</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {articles.map((article, index) => (
-              <ArticleCard key={index} {...article} />
-            ))}
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <h2 className="font-serif text-3xl font-bold mb-8">Latest Opinions</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              {articles.map((article, index) => (
+                <ArticleCard key={index} {...article} />
+              ))}
+            </div>
           </div>
-        </section>
+          
+          <div className="space-y-8">
+            <TrendingOpinions />
+          </div>
+        </div>
+
+        <CategorySection />
       </main>
     </div>
   );
