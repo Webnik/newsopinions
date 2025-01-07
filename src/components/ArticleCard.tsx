@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ArticleCardProps {
+  id?: string;
   title: string;
   excerpt: string;
   author: {
@@ -26,7 +27,7 @@ export function ArticleCard({ title, excerpt, author, date }: ArticleCardProps) 
             <p className="text-sm text-muted-foreground">{author.role}</p>
           </div>
         </div>
-        <h3 className="font-serif text-2xl font-bold hover:text-accent transition-colors cursor-pointer">
+        <h3 className="font-serif text-2xl font-bold hover:text-accent transition-colors">
           {title}
         </h3>
       </CardHeader>
