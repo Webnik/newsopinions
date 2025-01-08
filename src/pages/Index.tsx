@@ -17,10 +17,10 @@ const featuredArticle = {
   excerpt: "As artificial intelligence continues to evolve, its influence on journalism raises important questions about authenticity and trust.",
   author: {
     name: "Sarah Chen",
-    image: "https://i.pravatar.cc/150?u=sarah",
+    image: "/placeholder.svg", // Using local placeholder image
     role: "Technology Analyst"
   },
-  coverImage: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=2000&q=80"
+  coverImage: "/placeholder.svg" // Using local placeholder image
 };
 
 const articles = [
@@ -30,7 +30,7 @@ const articles = [
     excerpt: "How social media shapes political discourse in unexpected ways",
     author: {
       name: "Michael Roberts",
-      image: "https://i.pravatar.cc/150?u=michael",
+      image: "/placeholder.svg", // Using local placeholder image
       role: "Political Correspondent"
     },
     date: "March 15, 2024"
@@ -41,7 +41,7 @@ const articles = [
     excerpt: "Why some breakthrough technologies fail to reach mass adoption",
     author: {
       name: "Elena Martinez",
-      image: "https://i.pravatar.cc/150?u=elena",
+      image: "/placeholder.svg", // Using local placeholder image
       role: "Economics Editor"
     },
     date: "March 14, 2024"
@@ -52,7 +52,7 @@ const articles = [
     excerpt: "A deeper look at environmental policy and its real-world impact",
     author: {
       name: "David Kim",
-      image: "https://i.pravatar.cc/150?u=david",
+      image: "/placeholder.svg", // Using local placeholder image
       role: "Environmental Analyst"
     },
     date: "March 14, 2024"
@@ -64,17 +64,14 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       <main className="container mx-auto px-4 py-8 space-y-12">
-        {/* Breaking Opinions Banner */}
         <BreakingOpinions />
         
-        {/* Featured Opinion */}
         <section className="mb-12">
           <Link to="/article/featured">
             <FeaturedOpinion {...featuredArticle} />
           </Link>
         </section>
         
-        {/* Main Content Grid */}
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-12">
             <section>
