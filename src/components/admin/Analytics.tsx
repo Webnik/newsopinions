@@ -66,11 +66,15 @@ export function Analytics() {
     queryFn: async () => {
       const { data: articles } = await supabase
         .from('articles')
-        .select('category_id, categories!inner(name)')
+        .select(`
+          categories (
+            name
+          )
+        `)
         .not('category_id', 'is', null);
       
       // Manual grouping
-      const categoryCounts = articles?.reduce((acc: Record<string, number>, article) => {
+      const categoryCounts = articles?.reduce((acc: Record<string, number>, article: any) => {
         const categoryName = article.categories?.name || 'Uncategorized';
         acc[categoryName] = (acc[categoryName] || 0) + 1;
         return acc;
