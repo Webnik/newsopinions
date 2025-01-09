@@ -3,7 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, FileText, Eye, Share2 } from "lucide-react";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+
+const chartConfig = {
+  views: {
+    label: "Views",
+    color: "#6366f1"
+  }
+};
 
 export function Overview() {
   const { data: stats } = useQuery({
@@ -82,7 +89,7 @@ export function Overview() {
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
-            <ChartContainer>
+            <ChartContainer config={chartConfig}>
               <BarChart data={viewsOverTime}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />

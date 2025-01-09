@@ -19,6 +19,25 @@ import {
 
 const COLORS = ['#6366f1', '#ec4899', '#14b8a6', '#f59e0b'];
 
+const chartConfig = {
+  views: {
+    label: "Views",
+    color: "#6366f1"
+  },
+  comments: {
+    label: "Comments",
+    color: "#ec4899"
+  },
+  shares: {
+    label: "Shares",
+    color: "#14b8a6"
+  },
+  categories: {
+    label: "Categories",
+    color: "#f59e0b"
+  }
+};
+
 export function Analytics() {
   const { data: viewsData } = useQuery({
     queryKey: ['analytics-views'],
@@ -45,19 +64,21 @@ export function Analytics() {
   const { data: categoryData } = useQuery({
     queryKey: ['analytics-categories'],
     queryFn: async () => {
-      const { data } = await supabase
+      // Modified query to not use group
+      const { data: articles } = await supabase
         .from('articles')
-        .select(`
-          categories (
-            name
-          ),
-          count
-        `)
-        .group('categories.name');
+        .select('categories (name)');
+      
+      // Manual grouping
+      const categoryCounts = articles?.reduce((acc: Record<string, number>, article) => {
+        const categoryName = article.categories?.name || 'Uncategorized';
+        acc[categoryName] = (acc[categoryName] || 0) + 1;
+        return acc;
+      }, {});
 
-      return data?.map(({ categories, count }) => ({
-        name: categories?.name || 'Uncategorized',
-        value: count
+      return Object.entries(categoryCounts || {}).map(([name, value]) => ({
+        name,
+        value
       }));
     }
   });
@@ -107,7 +128,7 @@ export function Analytics() {
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
-            <ChartContainer>
+            <ChartContainer config={chartConfig}>
               <LineChart data={viewsData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
@@ -127,7 +148,7 @@ export function Analytics() {
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
-              <ChartContainer>
+              <ChartContainer config={chartConfig}>
                 <PieChart>
                   <Pie
                     data={categoryData}
@@ -156,7 +177,7 @@ export function Analytics() {
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
-              <ChartContainer>
+              <ChartContainer config={chartConfig}>
                 <BarChart data={engagementData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
