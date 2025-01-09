@@ -7,6 +7,8 @@ import { ShareModal } from "@/components/ShareModal";
 import { FollowButton } from "@/components/FollowButton";
 import { FollowerCount } from "@/components/FollowerCount";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { LikeButton } from "@/components/LikeButton";
+import { BookmarkButton } from "@/components/BookmarkButton";
 
 interface ArticleCardProps {
   id?: string;
@@ -58,6 +60,12 @@ export function ArticleCard({
           </div>
           <div className="flex items-center gap-2">
             <FollowButton profileId={author.id} />
+            {id && (
+              <>
+                <LikeButton articleId={id} />
+                <BookmarkButton articleId={id} />
+              </>
+            )}
             <Button
               variant="ghost"
               size="icon"
