@@ -7,6 +7,7 @@ import { PaginationControls } from "@/components/articles/PaginationControls";
 import { useState } from "react";
 import { useArticles } from "@/hooks/useArticles";
 import { Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function MainContent() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -48,11 +49,11 @@ export function MainContent() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : articles.length === 0 ? (
-          <div className="text-center py-12 bg-accent/5 rounded-lg">
-            <p className="text-muted-foreground">
-              No articles found. Check back later for new content.
-            </p>
-          </div>
+          <Alert className="bg-accent/5 border-accent">
+            <AlertDescription className="text-center py-8">
+              No articles found. Check back later for new content or try a different search.
+            </AlertDescription>
+          </Alert>
         ) : (
           <ArticleGrid 
             articles={articles}
