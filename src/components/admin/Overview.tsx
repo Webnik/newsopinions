@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText, Eye, Share2 } from "lucide-react";
+import { Users, FileText, Eye, Share2, Flag } from "lucide-react";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
@@ -20,14 +20,16 @@ export function Overview() {
         { count: userCount },
         { count: articleCount },
         { count: viewCount },
-        { count: shareCount }
+        { count: shareCount },
+        { count: reportCount }
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('articles').select('*', { count: 'exact', head: true }),
         supabase.from('article_views').select('*', { count: 'exact', head: true }),
-        supabase.from('shares').select('*', { count: 'exact', head: true })
+        supabase.from('shares').select('*', { count: 'exact', head: true }),
+        supabase.from('articles').select('*', { count: 'exact', head: true }).eq('reported', true)
       ]);
-      return { userCount, articleCount, viewCount, shareCount };
+      return { userCount, articleCount, viewCount, shareCount, reportCount };
     }
   });
 
@@ -57,14 +59,15 @@ export function Overview() {
     { title: "Total Users", value: stats?.userCount || 0, icon: Users },
     { title: "Total Articles", value: stats?.articleCount || 0, icon: FileText },
     { title: "Total Views", value: stats?.viewCount || 0, icon: Eye },
-    { title: "Total Shares", value: stats?.shareCount || 0, icon: Share2 }
+    { title: "Total Shares", value: stats?.shareCount || 0, icon: Share2 },
+    { title: "Reported Content", value: stats?.reportCount || 0, icon: Flag }
   ];
 
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold">Dashboard Overview</h1>
       
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
         {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
