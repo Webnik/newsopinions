@@ -1,6 +1,7 @@
 import { DailyViewsChart } from "./charts/DailyViewsChart";
 import { CategoryDistributionChart } from "./charts/CategoryDistributionChart";
 import { MonthlyEngagementChart } from "./charts/MonthlyEngagementChart";
+import { EngagementMetricsChart } from "./charts/EngagementMetricsChart";
 import { PerformanceMetrics } from "./PerformanceMetrics";
 import { ContentModeration } from "./ContentModeration";
 import { ReportingSystem } from "./ReportingSystem";
@@ -18,6 +19,7 @@ export function Analytics() {
           <ReportingSystem />
         </div>
         
+        <EngagementMetricsChart />
         <DailyViewsChart />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

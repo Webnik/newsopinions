@@ -6,6 +6,7 @@ import { ArticleGrid } from "@/components/articles/ArticleGrid";
 import { PaginationControls } from "@/components/articles/PaginationControls";
 import { useState } from "react";
 import { useArticles } from "@/hooks/useArticles";
+import { Loader2 } from "lucide-react";
 
 export function MainContent() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -37,21 +38,35 @@ export function MainContent() {
   return (
     <div className="lg:col-span-2 space-y-12">
       <section>
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="font-serif text-3xl font-bold">Latest Opinions</h2>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+          <h2 className="font-serif text-2xl md:text-3xl font-bold">Latest Opinions</h2>
           <SearchBar value={searchQuery} onChange={handleSearch} />
         </div>
         
-        <ArticleGrid 
-          articles={articles}
-          isLoading={isLoading}
-        />
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : articles.length === 0 ? (
+          <div className="text-center py-12 bg-accent/5 rounded-lg">
+            <p className="text-muted-foreground">
+              No articles found. Check back later for new content.
+            </p>
+          </div>
+        ) : (
+          <ArticleGrid 
+            articles={articles}
+            isLoading={isLoading}
+          />
+        )}
         
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+        {articles.length > 0 && (
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
       </section>
       
       <EditorsPicks />
