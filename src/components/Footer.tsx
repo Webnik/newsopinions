@@ -5,7 +5,7 @@ import { Input } from "./ui/input";
 
 export function Footer() {
   return (
-    <footer className="bg-[#1A1F2C] text-white mt-16">
+    <footer className="bg-[#1A1F26] text-white w-full mt-16">
       <div className="container mx-auto px-4 py-12">
         {/* Newsletter Section */}
         <div className="grid md:grid-cols-2 gap-8 pb-12 border-b border-gray-700">

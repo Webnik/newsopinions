@@ -15,34 +15,16 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const fetchFeaturedArticle = async () => {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(`
-      *,
-      author:profiles(*)
-    `)
-    .eq('featured', true)
-    .eq('published', true)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data;
-};
-
-const fetchLatestArticles = async () => {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(`
-      *,
-      author:profiles(*)
-    `)
-    .eq('published', true)
-    .order('created_at', { ascending: false })
-    .limit(3);
-
-  if (error) throw error;
-  return data;
+const sampleFeaturedArticle = {
+  id: "featured-1",
+  title: "The Future of Democracy in the Digital Age",
+  excerpt: "As technology reshapes our world, we must consider its impact on democratic institutions and civic engagement. This comprehensive analysis explores the challenges and opportunities ahead.",
+  author: {
+    name: "Dr. Sarah Chen",
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+    role: "Political Analyst"
+  },
+  coverImage: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b"
 };
 
 const Index = () => {
@@ -57,84 +39,90 @@ const Index = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navigation />
-      <main className="container mx-auto px-4 py-8 space-y-12">
-        <BreakingOpinions />
-        
-        <section className="mb-12">
-          {isFeaturedLoading ? (
-            <div className="w-full h-[400px] rounded-lg">
-              <Skeleton className="w-full h-full" />
-            </div>
-          ) : featuredArticle ? (
-            <Link to={`/article/${featuredArticle.id}`}>
-              <FeaturedOpinion
-                title={featuredArticle.title}
-                excerpt={featuredArticle.excerpt || ''}
-                author={{
-                  name: featuredArticle.author.full_name || featuredArticle.author.username || 'Anonymous',
-                  image: featuredArticle.author.avatar_url || '/placeholder.svg',
-                  role: featuredArticle.author.role || 'Contributor'
-                }}
-                coverImage={featuredArticle.cover_image || '/placeholder.svg'}
-              />
-            </Link>
-          ) : (
-            <div className="text-center p-8 border rounded-lg">
-              <p className="text-muted-foreground">No featured article available</p>
-            </div>
-          )}
-        </section>
-        
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-12">
-            <section>
-              <h2 className="font-serif text-3xl font-bold mb-8">Latest Opinions</h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {isArticlesLoading ? (
-                  Array(3).fill(0).map((_, i) => (
-                    <div key={i} className="space-y-4">
-                      <Skeleton className="h-12 w-full" />
-                      <Skeleton className="h-24 w-full" />
-                      <Skeleton className="h-8 w-24" />
-                    </div>
-                  ))
-                ) : latestArticles?.length ? (
-                  latestArticles.map((article) => (
-                    <Link key={article.id} to={`/article/${article.id}`}>
-                      <ArticleCard
-                        id={article.id}
-                        title={article.title}
-                        excerpt={article.excerpt || ''}
-                        author={{
-                          name: article.author.full_name || article.author.username || 'Anonymous',
-                          image: article.author.avatar_url || '/placeholder.svg',
-                          role: article.author.role || 'Contributor'
-                        }}
-                        date={new Date(article.created_at).toLocaleDateString()}
-                      />
-                    </Link>
-                  ))
-                ) : (
-                  <p className="text-muted-foreground">No articles available</p>
-                )}
-              </div>
-            </section>
-            
-            <EditorsPicks />
-            <RegionalPerspectives />
-          </div>
-          
-          <div className="space-y-8">
-            <TrendingOpinions />
-            <WeeklyHighlights />
-            <OpinionPolls />
+      <main className="flex-grow">
+        <div className="w-full bg-gradient-to-b from-accent/5 to-background/0 py-8">
+          <div className="container mx-auto px-4">
+            <BreakingOpinions />
           </div>
         </div>
+        
+        <div className="container mx-auto px-4 py-8 space-y-12">
+          <section className="mb-12">
+            {isFeaturedLoading ? (
+              <div className="w-full h-[400px] rounded-lg">
+                <Skeleton className="w-full h-full" />
+              </div>
+            ) : featuredArticle ? (
+              <Link to={`/article/${featuredArticle.id}`}>
+                <FeaturedOpinion
+                  title={featuredArticle.title}
+                  excerpt={featuredArticle.excerpt || ''}
+                  author={{
+                    name: featuredArticle.author.full_name || featuredArticle.author.username || 'Anonymous',
+                    image: featuredArticle.author.avatar_url || '/placeholder.svg',
+                    role: featuredArticle.author.role || 'Contributor'
+                  }}
+                  coverImage={featuredArticle.cover_image || sampleFeaturedArticle.coverImage}
+                />
+              </Link>
+            ) : (
+              <Link to={`/article/${sampleFeaturedArticle.id}`}>
+                <FeaturedOpinion {...sampleFeaturedArticle} />
+              </Link>
+            )}
+          </section>
+          
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-12">
+              <section>
+                <h2 className="font-serif text-3xl font-bold mb-8">Latest Opinions</h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {isArticlesLoading ? (
+                    Array(3).fill(0).map((_, i) => (
+                      <div key={i} className="space-y-4">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-24 w-full" />
+                        <Skeleton className="h-8 w-24" />
+                      </div>
+                    ))
+                  ) : latestArticles?.length ? (
+                    latestArticles.map((article) => (
+                      <Link key={article.id} to={`/article/${article.id}`}>
+                        <ArticleCard
+                          id={article.id}
+                          title={article.title}
+                          excerpt={article.excerpt || ''}
+                          author={{
+                            name: article.author.full_name || article.author.username || 'Anonymous',
+                            image: article.author.avatar_url || '/placeholder.svg',
+                            role: article.author.role || 'Contributor'
+                          }}
+                          date={new Date(article.created_at).toLocaleDateString()}
+                        />
+                      </Link>
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground">No articles available</p>
+                  )}
+                </div>
+              </section>
+              
+              <EditorsPicks />
+              <RegionalPerspectives />
+            </div>
+            
+            <div className="space-y-8">
+              <TrendingOpinions />
+              <WeeklyHighlights />
+              <OpinionPolls />
+            </div>
+          </div>
 
-        <CategorySection />
-        <MostDiscussed />
+          <CategorySection />
+          <MostDiscussed />
+        </div>
       </main>
       <Footer />
     </div>

@@ -19,10 +19,10 @@ export function Navigation() {
   };
 
   return (
-    <nav className="border-b">
+    <nav className="border-b w-full bg-white">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="font-serif text-xl font-bold">
-          Opinion Collective
+        <Link to="/" className="font-serif text-2xl font-bold text-[#403E43] hover:text-accent transition-colors">
+          NewsOpinions
         </Link>
         <div className="flex items-center space-x-4">
           {session ? (
