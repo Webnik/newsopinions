@@ -6,10 +6,12 @@ import { MostDiscussed } from "@/components/MostDiscussed";
 import { FeaturedSection } from "@/components/FeaturedSection";
 import { MainContent } from "@/components/MainContent";
 import { SidebarContent } from "@/components/SidebarContent";
+import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 
 const Index = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PerformanceMonitor />
       <Navigation />
       <main className="flex-grow">
         <div className="w-full bg-gradient-to-b from-accent/5 to-background/0 py-8">
