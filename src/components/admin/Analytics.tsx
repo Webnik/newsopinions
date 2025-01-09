@@ -79,7 +79,11 @@ export function Analytics() {
       return Object.entries(categoryCounts || {}).map(([name, value]) => ({
         name,
         value
-      }));: engagementData } = useQuery({
+      }));
+    }
+  });
+
+  const { data: engagementData } = useQuery({
     queryKey: ['analytics-engagement'],
     queryFn: async () => {
       const [
