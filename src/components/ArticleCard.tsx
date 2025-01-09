@@ -1,99 +1,95 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Share } from "lucide-react";
-import { ShareModal } from "@/components/ShareModal";
-import { FollowButton } from "@/components/FollowButton";
 import { FollowerCount } from "@/components/FollowerCount";
-import { OptimizedImage } from "@/components/ui/optimized-image";
-import { LikeButton } from "@/components/LikeButton";
 import { BookmarkButton } from "@/components/BookmarkButton";
+import { LikeButton } from "@/components/LikeButton";
+import { ShareButton } from "@/components/ShareButton";
+import { Badge } from "@/components/ui/badge";
+import { CalendarDays } from "lucide-react";
 
-interface ArticleCardProps {
-  id?: string;
-  title: string;
-  excerpt: string;
-  author: {
-    id: string;
-    name: string;
-    image: string;
-    role: string;
-  };
-  date: string;
-  coverImage?: string;
+interface Author {
+  id: string;
+  name: string;
+  image?: string;
+  role?: string;
 }
 
-export function ArticleCard({ 
-  id, 
-  title, 
-  excerpt, 
-  author, 
+interface ArticleCardProps {
+  id: string;
+  title: string;
+  excerpt: string;
+  author: Author;
+  date: string;
+  category?: string;
+  coverImage?: string;
+  className?: string;
+}
+
+export function ArticleCard({
+  id,
+  title,
+  excerpt,
+  author,
   date,
-  coverImage 
+  category,
+  coverImage,
+  className = "",
 }: ArticleCardProps) {
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  // Only show follower count if we have a valid UUID for the author
+  const showFollowerCount = author.id && author.id !== 'anonymous' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(author.id);
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow animate-fade-up">
+    <Card className={`overflow-hidden ${className}`}>
       {coverImage && (
-        <div className="aspect-video w-full">
-          <OptimizedImage
+        <div className="relative aspect-[16/9] overflow-hidden">
+          <img
             src={coverImage}
             alt={title}
-            className="w-full h-full object-cover"
+            className="object-cover w-full h-full transition-transform hover:scale-105"
           />
         </div>
       )}
-      <CardHeader className="p-6">
-        <div className="flex items-center justify-between mb-4">
+      <CardHeader>
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Avatar>
-              <AvatarImage src={author.image} alt={author.name} />
-              <AvatarFallback>{author.name[0]}</AvatarFallback>
+              <AvatarImage src={author.image} />
+              <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
-              <h4 className="font-medium text-sm">{author.name}</h4>
-              <p className="text-sm text-muted-foreground">{author.role}</p>
-              <FollowerCount profileId={author.id} className="mt-1" />
+              <div className="font-semibold">{author.name}</div>
+              {author.role && (
+                <div className="text-sm text-muted-foreground">{author.role}</div>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <FollowButton profileId={author.id} />
-            {id && (
-              <>
-                <LikeButton articleId={id} />
-                <BookmarkButton articleId={id} />
-              </>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsShareModalOpen(true);
-              }}
-            >
-              <Share className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center text-muted-foreground text-sm">
+            <CalendarDays className="mr-1 h-4 w-4" />
+            {date}
           </div>
         </div>
-        <h3 className="font-serif text-2xl font-bold hover:text-accent transition-colors">
+      </CardHeader>
+      <CardContent>
+        <h3 className="text-xl font-serif font-bold mb-2 line-clamp-2">
           {title}
         </h3>
-      </CardHeader>
-      <CardContent className="p-6 pt-0">
-        <p className="text-muted-foreground mb-4">{excerpt}</p>
-        <time className="text-sm text-muted-foreground">{date}</time>
+        <p className="text-muted-foreground line-clamp-2">{excerpt}</p>
+        {category && (
+          <Badge variant="secondary" className="mt-4">
+            {category}
+          </Badge>
+        )}
       </CardContent>
-      {id && (
-        <ShareModal
-          isOpen={isShareModalOpen}
-          onClose={() => setIsShareModalOpen(false)}
-          articleId={id}
-          articleTitle={title}
-        />
-      )}
+      <CardFooter className="flex justify-between items-center">
+        <div className="flex items-center space-x-4">
+          {showFollowerCount && <FollowerCount profileId={author.id} />}
+        </div>
+        <div className="flex items-center space-x-2">
+          <LikeButton articleId={id} />
+          <BookmarkButton articleId={id} />
+          <ShareButton articleId={id} title={title} />
+        </div>
+      </CardFooter>
     </Card>
   );
 }
