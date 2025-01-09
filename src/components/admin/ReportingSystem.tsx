@@ -7,7 +7,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
+import { ChartContainer } from "@/components/ui/chart";
 import {
   BarChart,
   Bar,
@@ -17,6 +17,13 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+
+const chartConfig = {
+  reports: {
+    label: "Reports",
+    color: "#ef4444"
+  }
+};
 
 export function ReportingSystem() {
   const { data: reportStats } = useQuery({
@@ -30,13 +37,13 @@ export function ReportingSystem() {
       if (error) throw error;
 
       // Group reports by month
-      const reportsByMonth = articles.reduce((acc: Record<string, number>, article) => {
+      const reportsByMonth = articles?.reduce((acc: Record<string, number>, article) => {
         const month = new Date(article.created_at).toLocaleString('default', { month: 'long' });
         acc[month] = (acc[month] || 0) + 1;
         return acc;
       }, {});
 
-      return Object.entries(reportsByMonth).map(([month, count]) => ({
+      return Object.entries(reportsByMonth || {}).map(([month, count]) => ({
         month,
         reports: count,
       }));
@@ -53,12 +60,12 @@ export function ReportingSystem() {
       </CardHeader>
       <CardContent>
         <div className="h-[400px]">
-          <ChartContainer>
+          <ChartContainer config={chartConfig}>
             <BarChart data={reportStats}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip content={<ChartTooltip />} />
+              <Tooltip />
               <Legend />
               <Bar dataKey="reports" fill="#ef4444" name="Reports" />
             </BarChart>
