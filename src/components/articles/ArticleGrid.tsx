@@ -14,7 +14,7 @@ interface Article {
   id: string;
   title: string;
   excerpt: string | null;
-  author: Author;
+  author: Author | null;
   created_at: string;
 }
 
@@ -55,10 +55,10 @@ export function ArticleGrid({ articles, isLoading }: ArticleGridProps) {
             title={article.title}
             excerpt={article.excerpt || ''}
             author={{
-              id: article.author.id,
-              name: article.author.full_name || article.author.username || 'Anonymous',
-              image: article.author.avatar_url || '/placeholder.svg',
-              role: article.author.role || 'Contributor'
+              id: article.author?.id || 'anonymous',
+              name: article.author?.full_name || article.author?.username || 'Anonymous',
+              image: article.author?.avatar_url || '/placeholder.svg',
+              role: article.author?.role || 'Contributor'
             }}
             date={new Date(article.created_at).toLocaleDateString()}
           />
