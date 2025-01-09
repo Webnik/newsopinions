@@ -80,6 +80,7 @@ async function fetchLatestArticles(page: number, category: string, search: strin
       cover_image,
       created_at,
       author:profiles(
+        id,
         full_name,
         username,
         avatar_url,
