@@ -7,10 +7,16 @@ import { FeaturedSection } from "@/components/FeaturedSection";
 import { MainContent } from "@/components/MainContent";
 import { SidebarContent } from "@/components/SidebarContent";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
+import { RecommendedArticles } from "@/components/RecommendedArticles";
+import { SEOHead } from "@/components/SEOHead";
 
 const Index = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEOHead
+        title="Latest News and Opinions"
+        description="Discover the latest news, opinions, and expert analysis on current events, politics, culture, and more."
+      />
       <PerformanceMonitor />
       <Navigation />
       <main className="flex-grow">
@@ -30,6 +36,7 @@ const Index = () => {
             <SidebarContent />
           </div>
 
+          <RecommendedArticles />
           <CategorySection />
           <MostDiscussed />
         </div>

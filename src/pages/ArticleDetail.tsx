@@ -7,6 +7,8 @@ import { ViewTracker } from "@/components/ViewTracker";
 import { ViewsChart } from "@/components/analytics/ViewsChart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { RecommendedArticles } from "@/components/RecommendedArticles";
+import { SEOHead } from "@/components/SEOHead";
 
 export default function ArticleDetail() {
   const { id } = useParams<{ id: string }>();
@@ -71,6 +73,20 @@ export default function ArticleDetail() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <SEOHead
+        title={article.title}
+        description={article.excerpt || ''}
+        image={article.cover_image}
+        article={{
+          publishedTime: article.created_at,
+          modifiedTime: article.updated_at,
+          author: {
+            name: article.author.full_name || article.author.username || 'Anonymous',
+            url: `/profile/${article.author.id}`
+          }
+        }}
+      />
+      
       {id && <ViewTracker articleId={id} />}
       
       <div className="flex items-center justify-between mb-8">
@@ -114,6 +130,10 @@ export default function ArticleDetail() {
         <ShareAnalytics articleId={article.id} />
         <ViewsChart articleId={article.id} />
       </div>
+
+      <hr className="my-12" />
+
+      <RecommendedArticles currentArticleId={article.id} />
 
       <hr className="my-12" />
 
