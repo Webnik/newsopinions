@@ -12,6 +12,7 @@ function App() {
         <Route path="/" element={<Index />} />
         <Route path="/article/:id" element={<ArticleDetail />} />
         <Route path="/new-article" element={<ArticleEditor />} />
+        <Route path="/edit-article/:id" element={<ArticleEditor />} />
         <Route path="/auth" element={<Auth />} />
       </Routes>
     </Router>
