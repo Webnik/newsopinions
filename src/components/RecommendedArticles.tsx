@@ -93,10 +93,10 @@ export function RecommendedArticles({ currentArticleId }: { currentArticleId?: s
             title={article.title}
             excerpt={article.excerpt || ''}
             author={{
-              id: article.author.id,
-              name: article.author.full_name || article.author.username || 'Anonymous',
-              image: article.author.avatar_url || '',
-              role: article.author.role || 'user'
+              id: article.author?.id || '',
+              name: article.author?.full_name || article.author?.username || 'Anonymous',
+              image: article.author?.avatar_url || '/placeholder.svg',
+              role: article.author?.role || 'Contributor'
             }}
             date={new Date(article.created_at).toLocaleDateString()}
             coverImage={article.cover_image || undefined}
