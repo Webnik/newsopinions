@@ -3,6 +3,7 @@ import { ArticleCard } from "@/components/ArticleCard";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Author {
+  id: string;
   full_name: string | null;
   username: string | null;
   avatar_url: string | null;
@@ -54,6 +55,7 @@ export function ArticleGrid({ articles, isLoading }: ArticleGridProps) {
             title={article.title}
             excerpt={article.excerpt || ''}
             author={{
+              id: article.author.id,
               name: article.author.full_name || article.author.username || 'Anonymous',
               image: article.author.avatar_url || '/placeholder.svg',
               role: article.author.role || 'Contributor'
