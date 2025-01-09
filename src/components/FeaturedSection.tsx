@@ -16,7 +16,7 @@ interface Article {
   title: string;
   excerpt: string | null;
   content: string;
-  author: Author;
+  author: Author | null;
   cover_image: string | null;
 }
 
@@ -53,9 +53,9 @@ export function FeaturedSection() {
           title={featuredArticle.title}
           excerpt={featuredArticle.excerpt || ''}
           author={{
-            name: featuredArticle.author.full_name || featuredArticle.author.username || 'Anonymous',
-            image: featuredArticle.author.avatar_url || '/placeholder.svg',
-            role: featuredArticle.author.role || 'Contributor'
+            name: featuredArticle.author?.full_name || featuredArticle.author?.username || 'Anonymous',
+            image: featuredArticle.author?.avatar_url || '/placeholder.svg',
+            role: featuredArticle.author?.role || 'Contributor'
           }}
           coverImage={featuredArticle.cover_image || sampleFeaturedArticle.coverImage}
         />
