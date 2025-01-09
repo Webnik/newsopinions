@@ -152,6 +152,38 @@ export type Database = {
         }
         Relationships: []
       }
+      shares: {
+        Row: {
+          article_id: string | null
+          created_at: string
+          id: string
+          platform: string
+          user_id: string | null
+        }
+        Insert: {
+          article_id?: string | null
+          created_at?: string
+          id?: string
+          platform: string
+          user_id?: string | null
+        }
+        Update: {
+          article_id?: string | null
+          created_at?: string
+          id?: string
+          platform?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shares_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
