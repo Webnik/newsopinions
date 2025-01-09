@@ -1,14 +1,11 @@
 import { useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { EditorsPicks } from "@/components/EditorsPicks";
 import { RegionalPerspectives } from "@/components/RegionalPerspectives";
 import { SearchBar } from "@/components/articles/SearchBar";
 import { ArticleGrid } from "@/components/articles/ArticleGrid";
 import { PaginationControls } from "@/components/articles/PaginationControls";
 import { useState } from "react";
-
-const ITEMS_PER_PAGE = 6;
+import { useArticles } from "@/hooks/useArticles";
 
 export function MainContent() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,17 +13,11 @@ export function MainContent() {
   const currentCategory = searchParams.get("category") || "";
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: articlesData, isLoading: isArticlesLoading } = useQuery({
-    queryKey: ['latestArticles', currentPage, currentCategory, searchQuery],
-    queryFn: () => fetchLatestArticles(currentPage, currentCategory, searchQuery)
+  const { articles, isLoading, totalPages } = useArticles({
+    page: currentPage,
+    category: currentCategory,
+    search: searchQuery,
   });
-
-  const { data: totalCount } = useQuery({
-    queryKey: ['articlesCount', currentCategory, searchQuery],
-    queryFn: () => fetchArticlesCount(currentCategory, searchQuery)
-  });
-
-  const totalPages = Math.ceil((totalCount || 0) / ITEMS_PER_PAGE);
 
   const handlePageChange = (page: number) => {
     setSearchParams(prev => {
@@ -52,8 +43,8 @@ export function MainContent() {
         </div>
         
         <ArticleGrid 
-          articles={articlesData?.articles || []}
-          isLoading={isArticlesLoading}
+          articles={articles}
+          isLoading={isLoading}
         />
         
         <PaginationControls
@@ -67,70 +58,4 @@ export function MainContent() {
       <RegionalPerspectives />
     </div>
   );
-}
-
-async function fetchLatestArticles(page: number, category: string, search: string) {
-  let query = supabase
-    .from('articles')
-    .select(`
-      id,
-      title,
-      excerpt,
-      content,
-      cover_image,
-      created_at,
-      author:profiles(
-        id,
-        full_name,
-        username,
-        avatar_url,
-        role
-      )
-    `)
-    .eq('published', true)
-    .order('created_at', { ascending: false });
-
-  if (category) {
-    query = query.eq('category_id', category);
-  }
-
-  if (search) {
-    query = query.or(`title.ilike.%${search}%,excerpt.ilike.%${search}%`);
-  }
-
-  const start = (page - 1) * ITEMS_PER_PAGE;
-  const end = start + ITEMS_PER_PAGE - 1;
-
-  const { data, error } = await query.range(start, end);
-
-  if (error) {
-    console.error('Error fetching latest articles:', error);
-    return { articles: [] };
-  }
-
-  return { articles: data };
-}
-
-async function fetchArticlesCount(category: string, search: string) {
-  let query = supabase
-    .from('articles')
-    .select('id', { count: 'exact', head: true })
-    .eq('published', true);
-
-  if (category) {
-    query = query.eq('category_id', category);
-  }
-
-  if (search) {
-    query = query.or(`title.ilike.%${search}%,excerpt.ilike.%${search}%`);
-  }
-
-  const { count, error } = await query;
-
-  if (error) {
-    console.error('Error fetching articles count:', error);
-    return 0;
-  }
-
-  return count;
 }
