@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Facebook, Twitter, LinkedIn, Link as LinkIcon } from "lucide-react";
+import { Facebook, Twitter, Linkedin, Link as LinkIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -89,7 +89,7 @@ export function ShareModal({ isOpen, onClose, articleId, articleTitle }: ShareMo
             className="w-full justify-start"
             onClick={() => handleShare('linkedin')}
           >
-            <LinkedIn className="mr-2 h-4 w-4" />
+            <Linkedin className="mr-2 h-4 w-4" />
             Share on LinkedIn
           </Button>
           <Button

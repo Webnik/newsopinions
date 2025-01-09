@@ -20,25 +20,22 @@ export function ShareAnalytics({ articleId }: { articleId: string }) {
       const { data, error } = await supabase
         .from('shares')
         .select('platform')
-        .eq('article_id', articleId)
-        .then(({ data }) => {
-          if (!data) return [];
-          
-          const counts: ShareCount[] = [];
-          const platforms = [...new Set(data.map(share => share.platform))];
-          
-          platforms.forEach(platform => {
-            counts.push({
-              platform,
-              count: data.filter(share => share.platform === platform).length
-            });
-          });
-          
-          return counts;
-        });
+        .eq('article_id', articleId);
 
       if (error) throw error;
-      return data;
+      if (!data) return [];
+      
+      const counts: ShareCount[] = [];
+      const platforms = [...new Set(data.map(share => share.platform))];
+      
+      platforms.forEach(platform => {
+        counts.push({
+          platform,
+          count: data.filter(share => share.platform === platform).length
+        });
+      });
+      
+      return counts;
     }
   });
 
