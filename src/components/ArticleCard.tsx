@@ -25,6 +25,12 @@ interface ArticleCardProps {
   className?: string;
 }
 
+// Placeholder images from Unsplash for consistent fallbacks
+const PLACEHOLDER_IMAGES = {
+  avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+  cover: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b"
+};
+
 export function ArticleCard({
   id,
   title,
@@ -40,10 +46,10 @@ export function ArticleCard({
 
   return (
     <Card className={`overflow-hidden ${className}`}>
-      {coverImage && (
+      {(coverImage || PLACEHOLDER_IMAGES.cover) && (
         <div className="relative aspect-[16/9] overflow-hidden">
           <img
-            src={coverImage}
+            src={coverImage || PLACEHOLDER_IMAGES.cover}
             alt={title}
             className="object-cover w-full h-full transition-transform hover:scale-105"
           />
@@ -53,7 +59,7 @@ export function ArticleCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Avatar>
-              <AvatarImage src={author.image} />
+              <AvatarImage src={author.image || PLACEHOLDER_IMAGES.avatar} />
               <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
