@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 interface FeaturedOpinionProps {
   title: string;
@@ -16,7 +17,7 @@ export function FeaturedOpinion({ title, excerpt, author, coverImage }: Featured
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow group">
       <div className="relative h-[500px] w-full">
-        <img
+        <OptimizedImage
           src={coverImage}
           alt={title}
           className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"

@@ -6,6 +6,7 @@ import { Share } from "lucide-react";
 import { ShareModal } from "@/components/ShareModal";
 import { FollowButton } from "@/components/FollowButton";
 import { FollowerCount } from "@/components/FollowerCount";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 interface ArticleCardProps {
   id?: string;
@@ -18,13 +19,30 @@ interface ArticleCardProps {
     role: string;
   };
   date: string;
+  coverImage?: string;
 }
 
-export function ArticleCard({ id, title, excerpt, author, date }: ArticleCardProps) {
+export function ArticleCard({ 
+  id, 
+  title, 
+  excerpt, 
+  author, 
+  date,
+  coverImage 
+}: ArticleCardProps) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow animate-fade-up">
+      {coverImage && (
+        <div className="aspect-video w-full">
+          <OptimizedImage
+            src={coverImage}
+            alt={title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
       <CardHeader className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
