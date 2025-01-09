@@ -24,7 +24,7 @@ const fetchFeaturedArticle = async () => {
     `)
     .eq('featured', true)
     .eq('published', true)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
   return data;
@@ -80,7 +80,11 @@ const Index = () => {
                 coverImage={featuredArticle.cover_image || '/placeholder.svg'}
               />
             </Link>
-          ) : null}
+          ) : (
+            <div className="text-center p-8 border rounded-lg">
+              <p className="text-muted-foreground">No featured article available</p>
+            </div>
+          )}
         </section>
         
         <div className="grid lg:grid-cols-3 gap-8">
@@ -96,21 +100,25 @@ const Index = () => {
                       <Skeleton className="h-8 w-24" />
                     </div>
                   ))
-                ) : latestArticles?.map((article) => (
-                  <Link key={article.id} to={`/article/${article.id}`}>
-                    <ArticleCard
-                      id={article.id}
-                      title={article.title}
-                      excerpt={article.excerpt || ''}
-                      author={{
-                        name: article.author.full_name || article.author.username || 'Anonymous',
-                        image: article.author.avatar_url || '/placeholder.svg',
-                        role: article.author.role || 'Contributor'
-                      }}
-                      date={new Date(article.created_at).toLocaleDateString()}
-                    />
-                  </Link>
-                ))}
+                ) : latestArticles?.length ? (
+                  latestArticles.map((article) => (
+                    <Link key={article.id} to={`/article/${article.id}`}>
+                      <ArticleCard
+                        id={article.id}
+                        title={article.title}
+                        excerpt={article.excerpt || ''}
+                        author={{
+                          name: article.author.full_name || article.author.username || 'Anonymous',
+                          image: article.author.avatar_url || '/placeholder.svg',
+                          role: article.author.role || 'Contributor'
+                        }}
+                        date={new Date(article.created_at).toLocaleDateString()}
+                      />
+                    </Link>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground">No articles available</p>
+                )}
               </div>
             </section>
             
