@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Comments } from "@/components/Comments";
 import { ShareAnalytics } from "@/components/ShareAnalytics";
 import { ViewTracker } from "@/components/ViewTracker";
+import { ViewsChart } from "@/components/analytics/ViewsChart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -111,6 +112,7 @@ export default function ArticleDetail() {
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
         <ShareAnalytics articleId={article.id} />
+        <ViewsChart articleId={article.id} />
       </div>
 
       <hr className="my-12" />
