@@ -24,11 +24,27 @@ interface CommentsProps {
 
 export function Comments({ articleId }: CommentsProps) {
   const [newComment, setNewComment] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: session } = await supabase.auth.getSession();
-  const isAuthenticated = !!session?.session?.user;
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session?.user);
+      setUserId(session?.user?.id || null);
+    };
+    
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session?.user);
+      setUserId(session?.user?.id || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const { data: comments, isLoading } = useQuery({
     queryKey: ["comments", articleId],
@@ -58,7 +74,7 @@ export function Comments({ articleId }: CommentsProps) {
       const { error } = await supabase.from("comments").insert({
         content,
         article_id: articleId,
-        author_id: session?.session?.user.id,
+        author_id: userId,
       });
 
       if (error) throw error;
