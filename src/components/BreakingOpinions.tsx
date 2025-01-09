@@ -12,7 +12,7 @@ const breakingOpinions = [
 
 export function BreakingOpinions() {
   return (
-    <div className="bg-accent/10 rounded-lg p-4 animate-fade-up">
+    <div className="bg-accent/10 rounded-lg p-4 pb-3 animate-fade-up">
       <div className="container mx-auto">
         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
           <div className="flex items-center gap-2">
