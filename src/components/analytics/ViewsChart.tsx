@@ -6,7 +6,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -88,9 +88,19 @@ export function ViewsChart({ articleId, className }: ViewsChartProps) {
                 radius={[4, 4, 0, 0]}
                 className="fill-primary"
               />
-              <ChartTooltip>
-                <ChartTooltipContent />
-              </ChartTooltip>
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <ChartTooltipContent
+                        active={active}
+                        payload={payload}
+                      />
+                    );
+                  }
+                  return null;
+                }}
+              />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
