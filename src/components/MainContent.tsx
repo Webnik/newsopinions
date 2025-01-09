@@ -5,6 +5,10 @@ import { RegionalPerspectives } from "@/components/RegionalPerspectives";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { useSearchParams } from "react-router-dom";
 
 interface Author {
   full_name: string | null;
@@ -23,11 +27,40 @@ interface Article {
   created_at: string;
 }
 
+const ITEMS_PER_PAGE = 6;
+
 export function MainContent() {
-  const { data: latestArticles, isLoading: isArticlesLoading } = useQuery({
-    queryKey: ['latestArticles'],
-    queryFn: fetchLatestArticles
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = Number(searchParams.get("page")) || 1;
+  const currentCategory = searchParams.get("category") || "";
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const { data: articlesData, isLoading: isArticlesLoading } = useQuery({
+    queryKey: ['latestArticles', currentPage, currentCategory, searchQuery],
+    queryFn: () => fetchLatestArticles(currentPage, currentCategory, searchQuery)
   });
+
+  const { data: totalCount } = useQuery({
+    queryKey: ['articlesCount', currentCategory, searchQuery],
+    queryFn: () => fetchArticlesCount(currentCategory, searchQuery)
+  });
+
+  const totalPages = Math.ceil((totalCount || 0) / ITEMS_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    setSearchParams(prev => {
+      prev.set("page", page.toString());
+      return prev;
+    });
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setSearchParams(prev => {
+      prev.set("page", "1");
+      return prev;
+    });
+  };
 
   if (isArticlesLoading) {
     return (
@@ -46,10 +79,19 @@ export function MainContent() {
   return (
     <div className="lg:col-span-2 space-y-12">
       <section>
-        <h2 className="font-serif text-3xl font-bold mb-8">Latest Opinions</h2>
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="font-serif text-3xl font-bold">Latest Opinions</h2>
+          <Input
+            type="search"
+            placeholder="Search articles..."
+            className="max-w-xs"
+            value={searchQuery}
+            onChange={handleSearch}
+          />
+        </div>
         <div className="grid md:grid-cols-2 gap-6">
-          {latestArticles?.length ? (
-            latestArticles.map((article) => (
+          {articlesData?.articles.length ? (
+            articlesData.articles.map((article) => (
               <Link key={article.id} to={`/article/${article.id}`}>
                 <ArticleCard
                   id={article.id}
@@ -65,9 +107,40 @@ export function MainContent() {
               </Link>
             ))
           ) : (
-            <p className="text-muted-foreground">No articles available</p>
+            <p className="text-muted-foreground col-span-2 text-center py-8">No articles found</p>
           )}
         </div>
+        
+        {totalPages > 1 && (
+          <div className="mt-8">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className={currentPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      onClick={() => handlePageChange(page)}
+                      isActive={currentPage === page}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </section>
       
       <EditorsPicks />
@@ -76,8 +149,8 @@ export function MainContent() {
   );
 }
 
-async function fetchLatestArticles() {
-  const { data, error } = await supabase
+async function fetchLatestArticles(page: number, category: string, search: string) {
+  let query = supabase
     .from('articles')
     .select(`
       id,
@@ -94,13 +167,50 @@ async function fetchLatestArticles() {
       )
     `)
     .eq('published', true)
-    .order('created_at', { ascending: false })
-    .limit(6);
+    .order('created_at', { ascending: false });
+
+  if (category) {
+    query = query.eq('category_id', category);
+  }
+
+  if (search) {
+    query = query.or(`title.ilike.%${search}%,excerpt.ilike.%${search}%`);
+  }
+
+  const start = (page - 1) * ITEMS_PER_PAGE;
+  const end = start + ITEMS_PER_PAGE - 1;
+
+  const { data, error } = await query
+    .range(start, end);
 
   if (error) {
     console.error('Error fetching latest articles:', error);
-    return [];
+    return { articles: [] };
   }
 
-  return data as Article[];
+  return { articles: data as Article[] };
+}
+
+async function fetchArticlesCount(category: string, search: string) {
+  let query = supabase
+    .from('articles')
+    .select('id', { count: 'exact', head: true })
+    .eq('published', true);
+
+  if (category) {
+    query = query.eq('category_id', category);
+  }
+
+  if (search) {
+    query = query.or(`title.ilike.%${search}%,excerpt.ilike.%${search}%`);
+  }
+
+  const { count, error } = await query;
+
+  if (error) {
+    console.error('Error fetching articles count:', error);
+    return 0;
+  }
+
+  return count;
 }
