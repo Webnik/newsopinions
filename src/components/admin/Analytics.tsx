@@ -64,10 +64,10 @@ export function Analytics() {
   const { data: categoryData } = useQuery({
     queryKey: ['analytics-categories'],
     queryFn: async () => {
-      // Modified query to not use group
       const { data: articles } = await supabase
         .from('articles')
-        .select('categories (name)');
+        .select('category_id, categories!inner(name)')
+        .not('category_id', 'is', null);
       
       // Manual grouping
       const categoryCounts = articles?.reduce((acc: Record<string, number>, article) => {
@@ -79,11 +79,7 @@ export function Analytics() {
       return Object.entries(categoryCounts || {}).map(([name, value]) => ({
         name,
         value
-      }));
-    }
-  });
-
-  const { data: engagementData } = useQuery({
+      }));: engagementData } = useQuery({
     queryKey: ['analytics-engagement'],
     queryFn: async () => {
       const [
