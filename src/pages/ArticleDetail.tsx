@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Comments } from "@/components/Comments";
 import { ShareAnalytics } from "@/components/ShareAnalytics";
+import { ViewTracker } from "@/components/ViewTracker";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -31,6 +32,18 @@ export default function ArticleDetail() {
     },
   });
 
+  const { data: viewCount } = useQuery({
+    queryKey: ["articleViews", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .rpc('get_article_view_count', { article_id: id });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl space-y-8">
@@ -57,7 +70,16 @@ export default function ArticleDetail() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="font-serif text-4xl font-bold mb-8">{article.title}</h1>
+      {id && <ViewTracker articleId={id} />}
+      
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-serif text-4xl font-bold">{article.title}</h1>
+        <div className="text-sm text-muted-foreground">
+          {viewCount !== null && (
+            <p>{viewCount} view{viewCount === 1 ? '' : 's'}</p>
+          )}
+        </div>
+      </div>
 
       <div className="flex items-center space-x-4 mb-8">
         <Avatar>
