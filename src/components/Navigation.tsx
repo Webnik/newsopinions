@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { PenSquare } from "lucide-react";
+import { PenSquare, User } from "lucide-react";
 
 export function Navigation() {
   const { data: session } = useQuery({
@@ -31,6 +31,12 @@ export function Navigation() {
                 <Button variant="ghost" size="sm">
                   <PenSquare className="mr-2 h-4 w-4" />
                   Write
+                </Button>
+              </Link>
+              <Link to="/profile">
+                <Button variant="ghost" size="sm">
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
                 </Button>
               </Link>
               <Button variant="ghost" size="sm" onClick={handleSignOut}>
