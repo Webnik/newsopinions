@@ -21,6 +21,7 @@ export default function ArticleDetail() {
         .select(`
           *,
           author:profiles(
+            id,
             full_name,
             username,
             avatar_url,
