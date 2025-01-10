@@ -13,28 +13,26 @@ const Auth = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        // Get the user's profile to check their role
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
+        try {
+          // Get the user's profile to check their role
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
 
-        // Redirect based on user role
-        if (profile?.role === 'admin') {
-          navigate('/admin');
-        } else {
-          navigate('/profile');
+          if (error) throw error;
+
+          // Redirect based on user role
+          if (profile?.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/profile');
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+          setErrorMessage("Error during login. Please try again.");
         }
-      }
-      if (event === 'USER_UPDATED') {
-        const { error } = await supabase.auth.getSession();
-        if (error) {
-          setErrorMessage(getErrorMessage(error));
-        }
-      }
-      if (event === 'SIGNED_OUT') {
-        setErrorMessage("");
       }
     });
 
