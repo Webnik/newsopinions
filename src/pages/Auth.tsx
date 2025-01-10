@@ -11,49 +11,64 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        try {
-          // First, check if profile exists
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .single();
-
-          if (profileError) {
-            // If no profile exists, create one with default role
-            const { error: insertError } = await supabase
-              .from('profiles')
-              .insert([
-                { 
-                  id: session.user.id,
-                  role: 'user'
-                }
-              ]);
-
-            if (insertError) throw insertError;
-            
-            // Redirect new users to profile page
-            navigate('/profile');
-            return;
-          }
-
-          // Redirect based on existing user role
-          if (profile?.role === 'admin') {
-            navigate('/admin');
-          } else {
-            navigate('/profile');
-          }
-        } catch (error) {
-          console.error('Error handling user profile:', error);
-          setErrorMessage("Error during login. Please try again.");
-        }
+    // Check if there's an existing session
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        handleAuthChange('SIGNED_IN', session);
       }
-    });
+    };
+    checkSession();
 
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthChange);
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handleAuthChange = async (event: string, session: any) => {
+    if (event === 'SIGNED_IN' && session) {
+      try {
+        // First, check if profile exists
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        if (profileError) {
+          // If no profile exists, create one with default role
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert([
+              { 
+                id: session.user.id,
+                role: 'user'
+              }
+            ]);
+
+          if (insertError) {
+            console.error('Error creating profile:', insertError);
+            setErrorMessage("Error creating user profile. Please try again.");
+            return;
+          }
+          
+          navigate('/profile');
+          return;
+        }
+
+        // Redirect based on existing user role
+        if (profile?.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/profile');
+        }
+      } catch (error) {
+        console.error('Error handling user profile:', error);
+        setErrorMessage("Error during login. Please try again.");
+        // Sign out the user if there was an error to prevent hanging
+        await supabase.auth.signOut();
+      }
+    }
+  };
 
   const getErrorMessage = (error: AuthError) => {
     if (error instanceof AuthApiError) {
