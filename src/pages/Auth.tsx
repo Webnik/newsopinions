@@ -13,7 +13,19 @@ const Auth = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        navigate('/');
+        // Get the user's profile to check their role
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+        // Redirect based on user role
+        if (profile?.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/profile');
+        }
       }
       if (event === 'USER_UPDATED') {
         const { error } = await supabase.auth.getSession();
