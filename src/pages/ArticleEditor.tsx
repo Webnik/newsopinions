@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload } from "@/components/ImageUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -124,6 +125,10 @@ export default function ArticleEditor() {
     });
   };
 
+  const handleImageUpload = (imageUrl: string) => {
+    setCoverImage(imageUrl);
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -155,13 +160,17 @@ export default function ArticleEditor() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="coverImage">Cover Image URL</Label>
-          <Input
-            id="coverImage"
-            value={coverImage}
-            onChange={(e) => setCoverImage(e.target.value)}
-            placeholder="https://example.com/image.jpg"
-          />
+          <Label>Cover Image</Label>
+          <div className="grid gap-4">
+            <ImageUpload onUploadComplete={handleImageUpload} />
+            {coverImage && (
+              <img
+                src={coverImage}
+                alt="Cover preview"
+                className="w-full h-48 object-cover rounded-lg"
+              />
+            )}
+          </div>
         </div>
 
         <div className="space-y-2">
