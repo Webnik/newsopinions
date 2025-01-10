@@ -6,9 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 interface ImageUploadProps {
   onUploadComplete?: (url: string) => void;
   className?: string;
+  currentImage?: string;  // Added this prop
 }
 
-export function ImageUpload({ onUploadComplete, className = "" }: ImageUploadProps) {
+export function ImageUpload({ onUploadComplete, className = "", currentImage }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
@@ -68,6 +69,11 @@ export function ImageUpload({ onUploadComplete, className = "" }: ImageUploadPro
 
   return (
     <div className={className}>
+      {currentImage && (
+        <div className="mb-4">
+          <img src={currentImage} alt="Current" className="max-w-xs rounded-lg" />
+        </div>
+      )}
       <input
         type="file"
         id="image-upload"

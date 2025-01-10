@@ -9,6 +9,7 @@ import { SidebarContent } from "@/components/SidebarContent";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { RecommendedArticles } from "@/components/RecommendedArticles";
 import { SEOHead } from "@/components/SEOHead";
+import { Toaster } from "@/components/ui/toaster";
 
 const Index = () => {
   return (
@@ -42,6 +43,7 @@ const Index = () => {
         </div>
       </main>
       <Footer />
+      <Toaster />
     </div>
   );
 };
