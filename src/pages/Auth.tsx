@@ -14,23 +14,39 @@ const Auth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         try {
-          // Get the user's profile to check their role
-          const { data: profile, error } = await supabase
+          // First, check if profile exists
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', session.user.id)
             .single();
 
-          if (error) throw error;
+          if (profileError) {
+            // If no profile exists, create one with default role
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert([
+                { 
+                  id: session.user.id,
+                  role: 'user'
+                }
+              ]);
 
-          // Redirect based on user role
+            if (insertError) throw insertError;
+            
+            // Redirect new users to profile page
+            navigate('/profile');
+            return;
+          }
+
+          // Redirect based on existing user role
           if (profile?.role === 'admin') {
             navigate('/admin');
           } else {
             navigate('/profile');
           }
         } catch (error) {
-          console.error('Error fetching user profile:', error);
+          console.error('Error handling user profile:', error);
           setErrorMessage("Error during login. Please try again.");
         }
       }
