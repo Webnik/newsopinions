@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PenSquare, FileText, Settings } from "lucide-react";
+import { PenSquare, FileText, Settings, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function UserDashboard() {
@@ -14,7 +14,7 @@ export function UserDashboard() {
     },
   });
 
-  const { data: userArticles } = useQuery({
+  const { data: articles, isLoading } = useQuery({
     queryKey: ['userArticles', session?.user?.id],
     enabled: !!session?.user?.id,
     queryFn: async () => {
@@ -28,9 +28,17 @@ export function UserDashboard() {
     },
   });
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <Link to="/new-article">
           <Button>
@@ -40,7 +48,7 @@ export function UserDashboard() {
         </Link>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Articles</CardTitle>
@@ -48,8 +56,8 @@ export function UserDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p className="text-2xl font-bold">{userArticles?.length || 0}</p>
-              <Link to="/articles">
+              <p className="text-2xl font-bold">{articles?.length || 0}</p>
+              <Link to="/dashboard/articles">
                 <Button variant="outline" className="w-full">
                   <FileText className="mr-2 h-4 w-4" />
                   View All Articles
@@ -67,7 +75,7 @@ export function UserDashboard() {
           <CardContent>
             <div className="space-y-2">
               <p className="text-2xl font-bold">0</p>
-              <Link to="/pages">
+              <Link to="/dashboard/pages">
                 <Button variant="outline" className="w-full">
                   <FileText className="mr-2 h-4 w-4" />
                   View All Pages
@@ -80,7 +88,7 @@ export function UserDashboard() {
         <Card>
           <CardHeader>
             <CardTitle>Settings</CardTitle>
-            <CardDescription>Manage your account</CardDescription>
+            <CardDescription>Manage your account settings</CardDescription>
           </CardHeader>
           <CardContent>
             <Link to="/profile">
@@ -93,10 +101,10 @@ export function UserDashboard() {
         </Card>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Recent Articles</h2>
-        <div className="grid gap-4">
-          {userArticles?.slice(0, 5).map((article) => (
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">Recent Articles</h2>
+        <div className="space-y-4">
+          {articles?.slice(0, 5).map((article) => (
             <Card key={article.id}>
               <CardHeader>
                 <CardTitle>{article.title}</CardTitle>
