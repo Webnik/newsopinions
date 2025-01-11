@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 interface ArticleFormProps {
   initialData?: {
@@ -74,6 +76,18 @@ export function ArticleForm({ initialData, onSubmit, isLoading }: ArticleFormPro
             onUploadComplete={(url) => setCoverImage(url)}
             currentImage={coverImage}
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="content">Content</Label>
+          <div className="min-h-[400px]">
+            <ReactQuill
+              theme="snow"
+              value={content}
+              onChange={setContent}
+              className="h-[350px]"
+            />
+          </div>
         </div>
 
         <div className="flex items-center space-x-2">

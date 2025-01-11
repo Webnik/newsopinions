@@ -1,10 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import Index from "@/pages/Index";
 import ArticleDetail from "@/pages/ArticleDetail";
 import ArticleEditor from "@/pages/ArticleEditor";
 import Auth from "@/pages/Auth";
 import UserProfile from "@/pages/UserProfile";
 import AdminDashboard from "@/pages/AdminDashboard";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import "./App.css";
@@ -39,25 +42,68 @@ function App() {
     return <>{children}</>;
   };
 
+  const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+    if (!session) {
+      return <Navigate to="/auth" />;
+    }
+    return <>{children}</>;
+  };
+
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/article/:id" element={<ArticleDetail />} />
-        <Route path="/new-article" element={<ArticleEditor />} />
-        <Route path="/edit-article/:id" element={<ArticleEditor />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/profile" element={<UserProfile />} />
-        <Route 
-          path="/admin/*" 
-          element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          } 
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          {session && <AppSidebar />}
+          <main className="flex-1">
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/article/:id" element={<ArticleDetail />} />
+              <Route 
+                path="/dashboard" 
+                element={
+                  <PrivateRoute>
+                    <DashboardLayout />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/new-article" 
+                element={
+                  <PrivateRoute>
+                    <ArticleEditor />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/edit-article/:id" 
+                element={
+                  <PrivateRoute>
+                    <ArticleEditor />
+                  </PrivateRoute>
+                } 
+              />
+              <Route path="/auth" element={<Auth />} />
+              <Route 
+                path="/profile" 
+                element={
+                  <PrivateRoute>
+                    <UserProfile />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/admin/*" 
+                element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
+                } 
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </main>
+        </div>
+      </SidebarProvider>
     </Router>
   );
 }
