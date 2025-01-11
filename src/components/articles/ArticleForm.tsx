@@ -86,6 +86,15 @@ export function ArticleForm({ initialData, onSubmit, isLoading }: ArticleFormPro
               value={content}
               onChange={setContent}
               className="h-[350px]"
+              modules={{
+                toolbar: [
+                  [{ header: [1, 2, 3, 4, 5, 6, false] }],
+                  ["bold", "italic", "underline", "strike"],
+                  [{ list: "ordered" }, { list: "bullet" }],
+                  ["link", "image"],
+                  ["clean"],
+                ],
+              }}
             />
           </div>
         </div>
