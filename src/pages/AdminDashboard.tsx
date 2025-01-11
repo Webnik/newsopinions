@@ -24,27 +24,29 @@ export default function AdminDashboard() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { path: "/admin", label: "Overview", icon: LayoutDashboard },
-    { path: "/admin/users", label: "Users", icon: Users },
-    { path: "/admin/articles", label: "Articles", icon: FileText },
-    { path: "/admin/analytics", label: "Analytics", icon: BarChart },
+    { path: "", label: "Overview", icon: LayoutDashboard },
+    { path: "users", label: "Users", icon: Users },
+    { path: "articles", label: "Articles", icon: FileText },
+    { path: "analytics", label: "Analytics", icon: BarChart },
   ];
 
   const isActiveRoute = (path: string) => {
-    if (path === '/admin') {
-      return location.pathname === '/admin';
+    const currentPath = location.pathname.replace('/admin/', '');
+    if (path === '') {
+      return currentPath === '' || currentPath === 'admin';
     }
-    return location.pathname === path;
+    return currentPath === path;
   };
 
   const NavContent = () => (
     <nav className="space-y-2">
       {navItems.map((item) => {
         const Icon = item.icon;
+        const fullPath = `/admin/${item.path}`;
         return (
           <Link
             key={item.path}
-            to={item.path}
+            to={fullPath}
             onClick={() => setIsMobileMenuOpen(false)}
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",

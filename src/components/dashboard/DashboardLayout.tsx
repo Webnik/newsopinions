@@ -1,7 +1,8 @@
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserDashboard } from "./UserDashboard";
-import AdminDashboard from "@/pages/AdminDashboard";
+import { ArticleManagement } from "@/components/admin/ArticleManagement";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -44,5 +45,11 @@ export function DashboardLayout() {
     );
   }
 
-  return profile.role === 'admin' ? <AdminDashboard /> : <UserDashboard />;
+  return (
+    <Routes>
+      <Route index element={<UserDashboard />} />
+      <Route path="articles" element={<ArticleManagement />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  );
 }

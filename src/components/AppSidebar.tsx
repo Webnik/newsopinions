@@ -68,10 +68,14 @@ export function AppSidebar() {
   ];
 
   const isActiveRoute = (path: string) => {
+    const currentPath = location.pathname;
     if (path === '/') {
-      return location.pathname === '/';
+      return currentPath === '/';
     }
-    return location.pathname.startsWith(path);
+    if (path === '/admin' || path === '/dashboard') {
+      return currentPath.startsWith(path);
+    }
+    return currentPath === path || currentPath.startsWith(`${path}/`);
   };
 
   if (!session) return null;
