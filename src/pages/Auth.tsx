@@ -48,6 +48,7 @@ const Auth = () => {
           if (insertError) {
             console.error('Error creating profile:', insertError);
             setErrorMessage("Error creating user profile. Please try again.");
+            await supabase.auth.signOut();
             return;
           }
           
@@ -115,6 +116,7 @@ const Auth = () => {
               }}
               theme="light"
               providers={[]}
+              redirectTo={window.location.origin}
             />
           </div>
         </div>
