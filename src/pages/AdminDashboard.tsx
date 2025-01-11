@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route, Link, useLocation } from "react-router-dom";
+import { Routes, Route, Link, useLocation, Navigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Overview } from "@/components/admin/Overview";
 import { UserManagement } from "@/components/admin/UserManagement";
@@ -20,7 +20,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function AdminDashboard() {
   const location = useLocation();
-  const [currentPath] = useState(location.pathname);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -42,7 +41,7 @@ export default function AdminDashboard() {
             onClick={() => setIsMobileMenuOpen(false)}
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-              currentPath === item.path
+              location.pathname === item.path
                 ? "bg-accent text-accent-foreground"
                 : "hover:bg-accent hover:text-accent-foreground"
             )}
@@ -104,10 +103,11 @@ export default function AdminDashboard() {
 
           <main className="flex-1">
             <Routes>
-              <Route path="/" element={<Overview />} />
-              <Route path="/users" element={<UserManagement />} />
-              <Route path="/articles" element={<ArticleManagement />} />
-              <Route path="/analytics" element={<Analytics />} />
+              <Route index element={<Overview />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="articles" element={<ArticleManagement />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="*" element={<Navigate to="/admin" replace />} />
             </Routes>
           </main>
         </div>
