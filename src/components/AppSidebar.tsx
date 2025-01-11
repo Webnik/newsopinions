@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -17,16 +17,17 @@ import {
   Home,
   PenSquare,
   FileText,
-  Settings,
-  LogOut,
   User,
   ChevronLeft,
   ChevronRight,
+  LogOut,
+  LayoutDashboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function AppSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const location = useLocation();
 
   const { data: session } = useQuery({
     queryKey: ['session'],
@@ -54,12 +55,16 @@ export function AppSidebar() {
     await supabase.auth.signOut();
   };
 
-  const navigationItems = [
+  const navigationItems = profile?.role === 'admin' ? [
     { title: "Home", url: "/", icon: Home },
-    { title: "Dashboard", url: "/dashboard", icon: Home },
+    { title: "Admin Dashboard", url: "/admin", icon: LayoutDashboard },
     { title: "New Article", url: "/new-article", icon: PenSquare },
-    { title: "Articles", url: "/articles", icon: FileText },
-    { title: "Pages", url: "/pages", icon: FileText },
+    { title: "Articles", url: "/admin/articles", icon: FileText },
+  ] : [
+    { title: "Home", url: "/", icon: Home },
+    { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+    { title: "New Article", url: "/new-article", icon: PenSquare },
+    { title: "My Articles", url: "/dashboard/articles", icon: FileText },
   ];
 
   if (!session) return null;
@@ -90,7 +95,10 @@ export function AppSidebar() {
             <SidebarMenu>
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton 
+                    asChild
+                    isActive={location.pathname === item.url}
+                  >
                     <Link to={item.url} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />
                       {!isCollapsed && <span>{item.title}</span>}
@@ -108,7 +116,10 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton 
+                  asChild
+                  isActive={location.pathname === '/profile'}
+                >
                   <Link to="/profile" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
                     {!isCollapsed && <span>{profile?.username || 'Profile'}</span>}

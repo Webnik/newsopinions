@@ -13,6 +13,20 @@ export function Navigation() {
     },
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ['profile', session?.user?.id],
+    enabled: !!session?.user?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session?.user?.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     window.location.href = "/";
@@ -31,6 +45,11 @@ export function Navigation() {
                 <Button variant="ghost" size="sm">
                   <PenSquare className="mr-2 h-4 w-4" />
                   Write
+                </Button>
+              </Link>
+              <Link to={profile?.role === 'admin' ? '/admin' : '/dashboard'}>
+                <Button variant="ghost" size="sm">
+                  Dashboard
                 </Button>
               </Link>
               <Link to="/profile">
