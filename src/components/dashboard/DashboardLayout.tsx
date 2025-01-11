@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserDashboard } from "./UserDashboard";
-import { AdminDashboard } from "./AdminDashboard";
+import AdminDashboard from "@/pages/AdminDashboard";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
