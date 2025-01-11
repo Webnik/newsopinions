@@ -60,13 +60,15 @@ const Auth = () => {
             setIsLoading(false);
             return;
           }
-        }
-
-        // Redirect based on role
-        if (profile?.role === 'admin') {
-          navigate('/admin');
-        } else {
+          // After creating profile, redirect to dashboard
           navigate('/dashboard');
+        } else {
+          // Redirect based on role
+          if (profile.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/dashboard');
+          }
         }
       } catch (error: any) {
         console.error('Error handling user profile:', error);
