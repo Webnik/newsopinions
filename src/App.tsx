@@ -10,7 +10,6 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import "./App.css";
 
 function App() {
   const { data: session } = useQuery({
@@ -58,47 +57,32 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/article/:id" element={<ArticleDetail />} />
-              <Route 
-                path="/dashboard" 
-                element={
-                  <PrivateRoute>
-                    <DashboardLayout />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/new-article" 
-                element={
-                  <PrivateRoute>
-                    <ArticleEditor />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/edit-article/:id" 
-                element={
-                  <PrivateRoute>
-                    <ArticleEditor />
-                  </PrivateRoute>
-                } 
-              />
+              <Route path="/dashboard/*" element={
+                <PrivateRoute>
+                  <DashboardLayout />
+                </PrivateRoute>
+              } />
+              <Route path="/new-article" element={
+                <PrivateRoute>
+                  <ArticleEditor />
+                </PrivateRoute>
+              } />
+              <Route path="/edit-article/:id" element={
+                <PrivateRoute>
+                  <ArticleEditor />
+                </PrivateRoute>
+              } />
               <Route path="/auth" element={<Auth />} />
-              <Route 
-                path="/profile" 
-                element={
-                  <PrivateRoute>
-                    <UserProfile />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/admin/*" 
-                element={
-                  <AdminRoute>
-                    <AdminDashboard />
-                  </AdminRoute>
-                } 
-              />
+              <Route path="/profile" element={
+                <PrivateRoute>
+                  <UserProfile />
+                </PrivateRoute>
+              } />
+              <Route path="/admin/*" element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              } />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>

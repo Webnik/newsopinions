@@ -67,6 +67,13 @@ export function AppSidebar() {
     { title: "My Articles", url: "/dashboard/articles", icon: FileText },
   ];
 
+  const isActiveRoute = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
+
   if (!session) return null;
 
   return (
@@ -97,7 +104,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild
-                    isActive={location.pathname === item.url}
+                    isActive={isActiveRoute(item.url)}
                   >
                     <Link to={item.url} className="flex items-center gap-2">
                       <item.icon className="h-4 w-4" />

@@ -30,6 +30,13 @@ export default function AdminDashboard() {
     { path: "/admin/analytics", label: "Analytics", icon: BarChart },
   ];
 
+  const isActiveRoute = (path: string) => {
+    if (path === '/admin') {
+      return location.pathname === '/admin';
+    }
+    return location.pathname === path;
+  };
+
   const NavContent = () => (
     <nav className="space-y-2">
       {navItems.map((item) => {
@@ -41,7 +48,7 @@ export default function AdminDashboard() {
             onClick={() => setIsMobileMenuOpen(false)}
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-              location.pathname === item.path
+              isActiveRoute(item.path)
                 ? "bg-accent text-accent-foreground"
                 : "hover:bg-accent hover:text-accent-foreground"
             )}
