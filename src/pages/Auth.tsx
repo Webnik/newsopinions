@@ -66,7 +66,7 @@ const Auth = () => {
         if (profile?.role === 'admin') {
           navigate('/admin');
         } else {
-          navigate('/profile');
+          navigate('/dashboard');
         }
       } catch (error: any) {
         console.error('Error handling user profile:', error);
