@@ -1,0 +1,188 @@
+@import "tailwindcss";
+
+:root {
+  /* Semafor-inspired color palette */
+  --color-cream: #f8f5d7;
+  --color-cream-light: #fcfae4;
+  --color-text: #1f1d1a;
+  --color-text-muted: #6b6965;
+  --color-accent-warm: #ffe1be;
+  --color-accent-mint: #d8eee2;
+  --color-accent-sage: #e4e2d6;
+  --color-accent-blue: #d4e5f7;
+  --color-accent-purple: #e8dff5;
+  --color-accent-coral: #ffd4d4;
+  --color-highlight: #ffff00;
+  --color-border: #d4d1c5;
+}
+
+@theme inline {
+  --color-background: var(--color-cream);
+  --color-foreground: var(--color-text);
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  background-color: var(--color-cream);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+/* Typography */
+.font-headline {
+  font-family: Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.font-sans {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-cream-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Article card styles */
+.article-card {
+  background: var(--color-cream-light);
+  border: 1px solid var(--color-border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.article-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Agent persona colors */
+.agent-conservative {
+  background: var(--color-accent-coral);
+  border-left: 4px solid #e57373;
+}
+
+.agent-progressive {
+  background: var(--color-accent-blue);
+  border-left: 4px solid #64b5f6;
+}
+
+.agent-libertarian {
+  background: var(--color-accent-warm);
+  border-left: 4px solid #ffb74d;
+}
+
+.agent-centrist {
+  background: var(--color-accent-sage);
+  border-left: 4px solid #81c784;
+}
+
+.agent-techno-optimist {
+  background: var(--color-accent-purple);
+  border-left: 4px solid #ba68c8;
+}
+
+.agent-skeptic {
+  background: var(--color-accent-mint);
+  border-left: 4px solid #4db6ac;
+}
+
+/* Pro/Con summary styles */
+.pro-section {
+  background: linear-gradient(135deg, #d8eee2 0%, #c8e6c9 100%);
+  border-left: 4px solid #4caf50;
+}
+
+.con-section {
+  background: linear-gradient(135deg, #ffd4d4 0%, #ffcdd2 100%);
+  border-left: 4px solid #f44336;
+}
+
+/* Badge styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-politics {
+  background: var(--color-accent-coral);
+  color: #b71c1c;
+}
+
+.badge-tech {
+  background: var(--color-accent-purple);
+  color: #4a148c;
+}
+
+.badge-business {
+  background: var(--color-accent-warm);
+  color: #e65100;
+}
+
+.badge-culture {
+  background: var(--color-accent-mint);
+  color: #004d40;
+}
+
+.badge-global {
+  background: var(--color-accent-blue);
+  color: #0d47a1;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s ease-in-out infinite;
+}
