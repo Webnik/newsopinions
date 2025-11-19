@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prepareAnalysisPipeline } from '@/lib/orchestrator';
 import { storeAnalysis, storeSummary, getAllAgents } from '@/lib/agents';
+import { runAnalysisPipeline, isAIConfigured } from '@/lib/ai-service';
 
-// This endpoint prepares analysis prompts for AI agents
-// In production, these would be sent to an LLM API (e.g., Anthropic Claude)
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const topicId = searchParams.get('topicId');
+  const forceDemo = searchParams.get('demo') === 'true';
 
   if (!topicId) {
     return NextResponse.json(
@@ -25,15 +25,30 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // In a production system, you would:
-    // 1. Send each agentPrompt to an LLM API
-    // 2. Parse the responses
-    // 3. Store the analyses
+    // Use real AI if configured, otherwise fall back to demo mode
+    if (isAIConfigured() && !forceDemo) {
+      // Real AI analysis with Claude
+      const result = await runAnalysisPipeline(topicId);
 
-    // For demo purposes, we'll generate placeholder analyses
+      return NextResponse.json({
+        success: true,
+        message: 'AI analysis generated successfully',
+        mode: 'ai',
+        data: {
+          topic: pipeline.topic,
+          analysesCount: result.analyses.length,
+          summary: {
+            proPoints: result.summary.proPoints.length,
+            conPoints: result.summary.conPoints.length,
+          },
+        },
+        redirect: `/topic/${topicId}`,
+      });
+    }
+
+    // Demo mode - generate placeholder analyses
     const agents = getAllAgents();
 
-    // Generate demo analyses for each agent
     for (const agent of agents) {
       const demoAnalysis = generateDemoAnalysis(agent.name, agent.bias, pipeline.topic.title);
       const demoStance = getDemoStance(agent.bias);
@@ -68,7 +83,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Analysis generated successfully',
+      message: 'Demo analysis generated (set ANTHROPIC_API_KEY for real AI)',
+      mode: 'demo',
       data: {
         topic: pipeline.topic,
         analysesCount: agents.length,

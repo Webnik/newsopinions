@@ -1,36 +1,154 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NewsOpinions
+
+AI-powered opinion analysis platform that aggregates opinions from across the political spectrum and has multiple AI agents debate them, giving you balanced perspectives on every hot topic.
+
+## Features
+
+- **Semafor-inspired design** - Clean, readable layout with cream color palette
+- **Opinion aggregation** - Crawls RSS feeds from diverse opinion sources
+- **6 AI agent personas** - Each with distinct biases and analytical styles
+- **Pro/Con summaries** - Quick bullet-point overview of all arguments
+- **Source attribution** - Links to original opinion pieces
+
+## AI Agents
+
+1. **Reagan Reynolds** (Conservative) - Traditional values, free markets
+2. **Maya Chen** (Progressive) - Social justice, systemic reform
+3. **Max Sterling** (Libertarian) - Individual freedom, decentralization
+4. **Jordan Blake** (Centrist) - Pragmatic compromise
+5. **Aria Nexus** (Techno-Optimist) - Innovation-first thinking
+6. **Dr. Vera Scruton** (Skeptic) - Critical analysis, epistemic humility
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
 
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create a `.env.local` file:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+# Required for real AI analysis (optional - demo mode works without it)
+ANTHROPIC_API_KEY=your-api-key-here
+```
 
-## Learn More
+Without the API key, the system runs in demo mode with placeholder analyses.
 
-To learn more about Next.js, take a look at the following resources:
+## Usage
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 1. Seed Sample Data
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Visit `/api/seed` to populate the database with sample topics and analyses.
 
-## Deploy on Vercel
+### 2. Crawl Opinion Sources
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Visit `/api/crawl` to fetch fresh opinions from configured RSS feeds.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 3. Generate AI Analysis
+
+For any topic, click "Generate Analyses" or visit:
+```
+/api/analyze?topicId=<topic-id>
+```
+
+### API Routes
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/seed` | GET | Seed database with sample data |
+| `/api/crawl` | GET | Crawl all opinion sources |
+| `/api/topics` | GET | List all topics |
+| `/api/topics?category=tech` | GET | Filter topics by category |
+| `/api/analyze?topicId=xxx` | GET | Generate AI analyses for topic |
+
+## Architecture
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── api/               # API routes
+│   ├── topic/[id]/        # Topic detail pages
+│   └── category/[cat]/    # Category pages
+├── components/            # React components
+│   ├── Header.tsx
+│   ├── Footer.tsx
+│   ├── TopicCard.tsx
+│   ├── AgentAnalysis.tsx
+│   ├── ProConSummary.tsx
+│   └── SourceOpinion.tsx
+└── lib/                   # Core logic
+    ├── database.ts        # SQLite schema
+    ├── agents.ts          # AI persona definitions
+    ├── crawler.ts         # RSS/HTML scraping
+    ├── orchestrator.ts    # Topic identification
+    └── ai-service.ts      # Anthropic Claude integration
+```
+
+## Automation
+
+For production, set up cron jobs to:
+
+1. **Crawl sources hourly**: `curl http://localhost:3000/api/crawl`
+2. **Generate analyses for new topics**: Iterate through unanalyzed topics
+
+Example cron (every hour):
+```cron
+0 * * * * curl -s http://localhost:3000/api/crawl
+```
+
+## Deployment
+
+### Vercel
+
+1. Push to GitHub
+2. Import to Vercel
+3. Add `ANTHROPIC_API_KEY` environment variable
+4. Deploy
+
+Note: SQLite database won't persist on Vercel. For production, migrate to:
+- Vercel Postgres
+- PlanetScale
+- Turso
+
+## Customization
+
+### Adding Opinion Sources
+
+Edit `src/lib/crawler.ts` and add to `defaultSources`:
+
+```typescript
+{
+  id: 'my-source',
+  name: 'My Opinion Source',
+  url: 'https://example.com',
+  feed_url: 'https://example.com/feed.xml',
+  bias: 'center-left',
+  category: 'politics'
+}
+```
+
+### Modifying AI Agents
+
+Edit `src/lib/agents.ts` to customize personas, add new agents, or modify analytical styles.
+
+## License
+
+MIT
+
+## Acknowledgments
+
+- Design inspired by [Semafor](https://semafor.com)
+- AI powered by [Anthropic Claude](https://anthropic.com)
