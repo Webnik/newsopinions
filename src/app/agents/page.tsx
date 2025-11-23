@@ -1,10 +1,10 @@
 import { getAllAgents } from '@/lib/agents';
-import { initializeSystem } from '@/lib/orchestrator';
-
-// Initialize to ensure agents exist
-initializeSystem();
+import { ensureInitialized } from '@/lib/orchestrator';
 
 export default function AgentsPage() {
+  // Ensure system is initialized (idempotent)
+  ensureInitialized();
+
   const agents = getAllAgents();
 
   return (

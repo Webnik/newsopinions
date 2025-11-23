@@ -137,7 +137,21 @@ export function storeAnalysis(
 }
 
 // Get analyses for a topic
-export function getTopicAnalyses(topicId: string): (AgentAnalysis & { agent: Agent })[] {
+export function getTopicAnalyses(topicId: string): (AgentAnalysis & { agent: Partial<Agent> })[] {
+  interface AnalysisRow {
+    id: string;
+    topic_id: string;
+    agent_id: string;
+    analysis: string;
+    stance: string | null;
+    key_points: string | null;
+    created_at: string;
+    agent_name: string;
+    agent_avatar: string | null;
+    agent_bias: string;
+    agent_color_class: string | null;
+  }
+
   const analyses = db.prepare(`
     SELECT a.*, ag.name as agent_name, ag.avatar as agent_avatar,
            ag.bias as agent_bias, ag.color_class as agent_color_class
@@ -145,16 +159,22 @@ export function getTopicAnalyses(topicId: string): (AgentAnalysis & { agent: Age
     JOIN agents ag ON a.agent_id = ag.id
     WHERE a.topic_id = ?
     ORDER BY a.created_at
-  `).all(topicId) as any[];
+  `).all(topicId) as AnalysisRow[];
 
   return analyses.map(a => ({
-    ...a,
+    id: a.id,
+    topic_id: a.topic_id,
+    agent_id: a.agent_id,
+    analysis: a.analysis,
+    stance: a.stance || undefined,
+    key_points: a.key_points || undefined,
+    created_at: a.created_at,
     agent: {
       id: a.agent_id,
       name: a.agent_name,
-      avatar: a.agent_avatar,
+      avatar: a.agent_avatar || undefined,
       bias: a.agent_bias,
-      color_class: a.agent_color_class
+      color_class: a.agent_color_class || undefined,
     }
   }));
 }

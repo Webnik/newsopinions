@@ -1,29 +1,13 @@
+import Link from 'next/link';
 import TopicCard from '@/components/TopicCard';
-import { initializeSystem, getAllTopics } from '@/lib/orchestrator';
-import db from '@/lib/database';
-
-// Initialize system on first load
-initializeSystem();
+import { ensureInitialized, getAllTopicsWithCounts } from '@/lib/orchestrator';
 
 export default async function HomePage() {
-  const topics = getAllTopics();
+  // Lazy initialization - only runs once per process
+  ensureInitialized();
 
-  // Get additional data for each topic
-  const topicsWithData = topics.map(topic => {
-    const opinions = db.prepare(`
-      SELECT COUNT(*) as count FROM topic_opinions WHERE topic_id = ?
-    `).get(topic.id) as { count: number };
-
-    const analyses = db.prepare(`
-      SELECT COUNT(*) as count FROM agent_analyses WHERE topic_id = ?
-    `).get(topic.id) as { count: number };
-
-    return {
-      ...topic,
-      opinionsCount: opinions?.count || 0,
-      analysesCount: analyses?.count || 0,
-    };
-  });
+  // Get topics with counts (optimized - single query)
+  const topicsWithData = getAllTopicsWithCounts();
 
   const featuredTopics = topicsWithData.filter(t => t.is_featured);
   const recentTopics = topicsWithData.filter(t => !t.is_featured);
@@ -71,7 +55,7 @@ export default async function HomePage() {
           <div className="bg-[var(--color-cream-light)] rounded-lg p-6 border border-[var(--color-border)]">
             <div className="grid md:grid-cols-2 gap-4">
               {recentTopics.slice(0, 6).map((topic, index) => (
-                <a
+                <Link
                   key={topic.id}
                   href={`/topic/${topic.id}`}
                   className="flex items-start gap-4 p-3 rounded-lg hover:bg-[var(--color-cream)] transition-colors"
@@ -87,7 +71,7 @@ export default async function HomePage() {
                       {topic.category || 'General'}
                     </span>
                   </div>
-                </a>
+                </Link>
               ))}
             </div>
           </div>
@@ -116,38 +100,25 @@ export default async function HomePage() {
         ) : (
           <div className="text-center py-12 bg-[var(--color-cream-light)] rounded-lg border border-[var(--color-border)]">
             <h3 className="font-headline text-xl mb-2">No debates yet</h3>
-            <p className="font-sans text-sm text-[var(--color-text-muted)] mb-4">
+            <p className="font-sans text-sm text-[var(--color-text-muted)]">
               Start by seeding some sample data or crawling opinion sources.
             </p>
-            <a
-              href="/api/seed"
-              className="inline-block font-sans text-sm bg-[var(--color-text)] text-[var(--color-cream)] px-6 py-2 rounded-full hover:opacity-90 transition-opacity"
-            >
-              Seed Sample Data
-            </a>
+            <p className="font-sans text-xs text-[var(--color-text-muted)] mt-2">
+              Run <code className="bg-[var(--color-cream)] px-2 py-1 rounded">curl -X POST http://localhost:3000/api/seed</code> to get started.
+            </p>
           </div>
         )}
       </section>
 
-      {/* Newsletter signup */}
+      {/* Newsletter signup - Placeholder for future feature */}
       <section className="mt-16 bg-[var(--color-text)] text-[var(--color-cream)] rounded-lg p-8 text-center">
         <h2 className="font-headline text-2xl mb-4">Stay Informed</h2>
-        <p className="font-sans text-sm opacity-80 mb-6 max-w-md mx-auto">
-          Get daily AI-analyzed opinion summaries delivered to your inbox.
+        <p className="font-sans text-sm opacity-80 mb-2 max-w-md mx-auto">
+          Newsletter functionality coming soon.
         </p>
-        <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-          <input
-            type="email"
-            placeholder="Enter your email"
-            className="flex-grow px-4 py-2 rounded-full bg-[var(--color-highlight)] text-[var(--color-text)] placeholder-[var(--color-text-muted)] font-sans text-sm"
-          />
-          <button
-            type="submit"
-            className="px-6 py-2 rounded-full bg-[var(--color-cream)] text-[var(--color-text)] font-sans text-sm font-medium hover:opacity-90 transition-opacity"
-          >
-            Subscribe
-          </button>
-        </form>
+        <p className="font-sans text-xs opacity-60 max-w-md mx-auto">
+          Future releases will include daily AI-analyzed opinion summaries delivered to your inbox.
+        </p>
       </section>
     </div>
   );

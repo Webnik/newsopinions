@@ -10,10 +10,30 @@ import {
 } from './agents';
 import { getRecentOpinions, initializeSources } from './crawler';
 
-// Initialize the system
+// Track initialization state
+let isInitialized = false;
+
+// Initialize the system (idempotent - safe to call multiple times)
 export function initializeSystem(): void {
-  initializeSources();
-  initializeAgents();
+  if (isInitialized) {
+    return;
+  }
+
+  try {
+    initializeSources();
+    initializeAgents();
+    isInitialized = true;
+  } catch (error) {
+    console.error('[Orchestrator] Failed to initialize system:', error);
+    // Don't set isInitialized = true on failure, so we can retry next time
+  }
+}
+
+// Lazy initialization - call this before any operation that needs the system
+export function ensureInitialized(): void {
+  if (!isInitialized) {
+    initializeSystem();
+  }
 }
 
 // Identify topics from opinions using clustering/similarity
@@ -114,9 +134,59 @@ export function getTopicWithOpinions(topicId: string): { topic: Topic; opinions:
   return { topic, opinions };
 }
 
+// Get topic with opinions including source names (optimized - no N+1)
+export function getTopicWithOpinionsAndSources(topicId: string): {
+  topic: Topic;
+  opinions: (Opinion & { sourceName: string })[]
+} | null {
+  const topic = db.prepare('SELECT * FROM topics WHERE id = ?').get(topicId) as Topic | undefined;
+  if (!topic) return null;
+
+  const opinions = db.prepare(`
+    SELECT o.*, s.name as sourceName
+    FROM opinions o
+    JOIN topic_opinions to_link ON o.id = to_link.opinion_id
+    JOIN sources s ON o.source_id = s.id
+    WHERE to_link.topic_id = ?
+    ORDER BY to_link.relevance_score DESC
+  `).all(topicId) as (Opinion & { sourceName: string })[];
+
+  return { topic, opinions };
+}
+
 // Get all topics
 export function getAllTopics(): Topic[] {
   return db.prepare('SELECT * FROM topics ORDER BY updated_at DESC').all() as Topic[];
+}
+
+// Get all topics with counts (optimized - no N+1)
+export function getAllTopicsWithCounts(): (Topic & { opinionsCount: number; analysesCount: number })[] {
+  const topics = getAllTopics();
+
+  // Get all opinion counts in one query
+  const opinionCounts = db.prepare(`
+    SELECT topic_id, COUNT(*) as count
+    FROM topic_opinions
+    GROUP BY topic_id
+  `).all() as { topic_id: string; count: number }[];
+
+  // Get all analysis counts in one query
+  const analysisCounts = db.prepare(`
+    SELECT topic_id, COUNT(*) as count
+    FROM agent_analyses
+    GROUP BY topic_id
+  `).all() as { topic_id: string; count: number }[];
+
+  // Create lookup maps
+  const opinionCountMap = new Map(opinionCounts.map(c => [c.topic_id, c.count]));
+  const analysisCountMap = new Map(analysisCounts.map(c => [c.topic_id, c.count]));
+
+  // Merge data
+  return topics.map(topic => ({
+    ...topic,
+    opinionsCount: opinionCountMap.get(topic.id) || 0,
+    analysesCount: analysisCountMap.get(topic.id) || 0,
+  }));
 }
 
 // Get featured topics
@@ -127,6 +197,45 @@ export function getFeaturedTopics(): Topic[] {
 // Get topics by category
 export function getTopicsByCategory(category: string): Topic[] {
   return db.prepare('SELECT * FROM topics WHERE category = ? ORDER BY updated_at DESC').all(category) as Topic[];
+}
+
+// Get topics by category with counts (optimized - no N+1)
+export function getTopicsByCategoryWithCounts(category: string): (Topic & { opinionsCount: number; analysesCount: number })[] {
+  const topics = getTopicsByCategory(category);
+
+  if (topics.length === 0) {
+    return [];
+  }
+
+  const topicIds = topics.map(t => t.id);
+  const placeholders = topicIds.map(() => '?').join(',');
+
+  // Get opinion counts for these topics
+  const opinionCounts = db.prepare(`
+    SELECT topic_id, COUNT(*) as count
+    FROM topic_opinions
+    WHERE topic_id IN (${placeholders})
+    GROUP BY topic_id
+  `).all(...topicIds) as { topic_id: string; count: number }[];
+
+  // Get analysis counts for these topics
+  const analysisCounts = db.prepare(`
+    SELECT topic_id, COUNT(*) as count
+    FROM agent_analyses
+    WHERE topic_id IN (${placeholders})
+    GROUP BY topic_id
+  `).all(...topicIds) as { topic_id: string; count: number }[];
+
+  // Create lookup maps
+  const opinionCountMap = new Map(opinionCounts.map(c => [c.topic_id, c.count]));
+  const analysisCountMap = new Map(analysisCounts.map(c => [c.topic_id, c.count]));
+
+  // Merge data
+  return topics.map(topic => ({
+    ...topic,
+    opinionsCount: opinionCountMap.get(topic.id) || 0,
+    analysesCount: analysisCountMap.get(topic.id) || 0,
+  }));
 }
 
 // Select agents for a topic based on relevance

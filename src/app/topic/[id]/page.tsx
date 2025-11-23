@@ -1,40 +1,48 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import AgentAnalysis from '@/components/AgentAnalysis';
 import ProConSummary from '@/components/ProConSummary';
 import SourceOpinion from '@/components/SourceOpinion';
-import { getTopicWithOpinions } from '@/lib/orchestrator';
+import { ensureInitialized, getTopicWithOpinionsAndSources } from '@/lib/orchestrator';
 import { getTopicAnalyses, getTopicSummary } from '@/lib/agents';
-import db from '@/lib/database';
 
 interface TopicPageProps {
   params: Promise<{ id: string }>;
 }
 
+// Safe JSON parsing helper
+function safeJSONParse<T>(jsonString: string | undefined, fallback: T): T {
+  if (!jsonString) return fallback;
+  try {
+    const parsed = JSON.parse(jsonString);
+    return parsed;
+  } catch (error) {
+    console.error('[TopicPage] Failed to parse JSON:', error);
+    return fallback;
+  }
+}
+
 export default async function TopicPage({ params }: TopicPageProps) {
   const { id } = await params;
-  const topicData = getTopicWithOpinions(id);
+
+  // Ensure system is initialized
+  ensureInitialized();
+
+  // Get topic with opinions and sources (optimized - single query)
+  const topicData = getTopicWithOpinionsAndSources(id);
 
   if (!topicData) {
     notFound();
   }
 
-  const { topic, opinions } = topicData;
+  const { topic, opinions: opinionsWithSources } = topicData;
   const analyses = getTopicAnalyses(id);
   const summary = getTopicSummary(id);
 
-  // Get source names for opinions
-  const opinionsWithSources = opinions.map(opinion => {
-    const source = db.prepare('SELECT name FROM sources WHERE id = ?').get(opinion.source_id) as { name: string } | undefined;
-    return {
-      ...opinion,
-      sourceName: source?.name || 'Unknown Source',
-    };
-  });
-
-  // Parse summary points
-  const proPoints = summary ? JSON.parse(summary.pro_points) : [];
-  const conPoints = summary ? JSON.parse(summary.con_points) : [];
+  // Parse summary points safely
+  const proPoints = safeJSONParse<string[]>(summary?.pro_points, []);
+  const conPoints = safeJSONParse<string[]>(summary?.con_points, []);
 
   const categoryBadgeClass = topic.category ? `badge-${topic.category}` : 'badge-politics';
 
@@ -81,7 +89,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
           </p>
           <div className="space-y-4">
             {analyses.map(analysis => {
-              const keyPoints = analysis.key_points ? JSON.parse(analysis.key_points) : [];
+              const keyPoints = safeJSONParse<string[]>(analysis.key_points, []);
               return (
                 <AgentAnalysis
                   key={analysis.id}
@@ -104,14 +112,11 @@ export default async function TopicPage({ params }: TopicPageProps) {
           <div className="bg-[var(--color-cream-light)] border border-[var(--color-border)] rounded-lg p-8 text-center">
             <h3 className="font-headline text-xl mb-2">No analyses yet</h3>
             <p className="font-sans text-sm text-[var(--color-text-muted)] mb-4">
-              Request AI agent analyses for this topic to see multiple perspectives.
+              AI agent analyses for this topic have not been generated yet.
             </p>
-            <a
-              href={`/api/analyze?topicId=${id}`}
-              className="inline-block font-sans text-sm bg-[var(--color-text)] text-[var(--color-cream)] px-6 py-2 rounded-full hover:opacity-90 transition-opacity"
-            >
-              Generate Analyses
-            </a>
+            <p className="font-sans text-xs text-[var(--color-text-muted)]">
+              Run: <code className="bg-[var(--color-cream)] px-2 py-1 rounded">curl -X POST http://localhost:3000/api/analyze -H &quot;Content-Type: application/json&quot; -d &apos;&#123;&quot;topicId&quot;:&quot;{id}&quot;&#125;&apos;</code>
+            </p>
           </div>
         </section>
       )}
@@ -141,12 +146,12 @@ export default async function TopicPage({ params }: TopicPageProps) {
 
       {/* Back to home */}
       <div className="border-t border-[var(--color-border)] pt-8">
-        <a
+        <Link
           href="/"
           className="font-sans text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
         >
           ← Back to all debates
-        </a>
+        </Link>
       </div>
     </div>
   );

@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { crawlAllSources, initializeSources } from '@/lib/crawler';
-import { processNewOpinions } from '@/lib/orchestrator';
+import { crawlAllSources } from '@/lib/crawler';
+import { ensureInitialized, processNewOpinions } from '@/lib/orchestrator';
 
 // Crawl all configured opinion sources
-export async function GET() {
+export async function POST() {
   try {
-    // Ensure sources are initialized
-    initializeSources();
+    // Ensure system is initialized
+    ensureInitialized();
 
     // Crawl all RSS feeds
     const opinions = await crawlAllSources();
