@@ -1,21 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prepareAnalysisPipeline } from '@/lib/orchestrator';
+import { ensureInitialized, prepareAnalysisPipeline } from '@/lib/orchestrator';
 import { storeAnalysis, storeSummary, getAllAgents } from '@/lib/agents';
 import { runAnalysisPipeline, isAIConfigured } from '@/lib/ai-service';
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const topicId = searchParams.get('topicId');
-  const forceDemo = searchParams.get('demo') === 'true';
+export async function POST(request: NextRequest) {
+  let topicId: string | undefined;
+  let forceDemo = false;
 
-  if (!topicId) {
+  try {
+    const body = await request.json();
+    topicId = body.topicId;
+    forceDemo = body.demo === true;
+  } catch {
     return NextResponse.json(
-      { success: false, error: 'topicId is required' },
+      { success: false, error: 'Invalid request body. Expected JSON with topicId field.' },
+      { status: 400 }
+    );
+  }
+
+  if (!topicId || typeof topicId !== 'string' || topicId.trim() === '') {
+    return NextResponse.json(
+      { success: false, error: 'topicId is required and must be a non-empty string' },
       { status: 400 }
     );
   }
 
   try {
+    // Ensure system is initialized
+    ensureInitialized();
+
     const pipeline = prepareAnalysisPipeline(topicId);
 
     if (!pipeline) {

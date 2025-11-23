@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import db from '@/lib/database';
-import { initializeSystem } from '@/lib/orchestrator';
-import { initializeAgents, storeSummary, storeAnalysis } from '@/lib/agents';
+import { ensureInitialized } from '@/lib/orchestrator';
+import { storeSummary, storeAnalysis } from '@/lib/agents';
 import { initializeSources } from '@/lib/crawler';
 
 // Sample opinions for demonstration
@@ -157,10 +157,10 @@ const sampleSummaries = [
   },
 ];
 
-export async function GET() {
+export async function POST() {
   try {
-    // Initialize system
-    initializeSystem();
+    // Ensure system is initialized
+    ensureInitialized();
 
     // Create sample sources
     const sources = [

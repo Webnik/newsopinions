@@ -10,10 +10,30 @@ import {
 } from './agents';
 import { getRecentOpinions, initializeSources } from './crawler';
 
-// Initialize the system
+// Track initialization state
+let isInitialized = false;
+
+// Initialize the system (idempotent - safe to call multiple times)
 export function initializeSystem(): void {
-  initializeSources();
-  initializeAgents();
+  if (isInitialized) {
+    return;
+  }
+
+  try {
+    initializeSources();
+    initializeAgents();
+    isInitialized = true;
+  } catch (error) {
+    console.error('[Orchestrator] Failed to initialize system:', error);
+    // Don't set isInitialized = true on failure, so we can retry next time
+  }
+}
+
+// Lazy initialization - call this before any operation that needs the system
+export function ensureInitialized(): void {
+  if (!isInitialized) {
+    initializeSystem();
+  }
 }
 
 // Identify topics from opinions using clustering/similarity

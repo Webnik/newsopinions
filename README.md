@@ -51,28 +51,33 @@ Without the API key, the system runs in demo mode with placeholder analyses.
 
 ### 1. Seed Sample Data
 
-Visit `/api/seed` to populate the database with sample topics and analyses.
+```bash
+curl -X POST http://localhost:3000/api/seed
+```
 
 ### 2. Crawl Opinion Sources
 
-Visit `/api/crawl` to fetch fresh opinions from configured RSS feeds.
+```bash
+curl -X POST http://localhost:3000/api/crawl
+```
 
 ### 3. Generate AI Analysis
 
-For any topic, click "Generate Analyses" or visit:
-```
-/api/analyze?topicId=<topic-id>
+```bash
+curl -X POST http://localhost:3000/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"topicId": "<topic-id>"}'
 ```
 
 ### API Routes
 
 | Route | Method | Description |
 |-------|--------|-------------|
-| `/api/seed` | GET | Seed database with sample data |
-| `/api/crawl` | GET | Crawl all opinion sources |
+| `/api/seed` | POST | Seed database with sample data |
+| `/api/crawl` | POST | Crawl all opinion sources |
 | `/api/topics` | GET | List all topics |
 | `/api/topics?category=tech` | GET | Filter topics by category |
-| `/api/analyze?topicId=xxx` | GET | Generate AI analyses for topic |
+| `/api/analyze` | POST | Generate AI analyses for topic (body: `{"topicId": "xxx"}`) |
 
 ## Architecture
 
@@ -101,27 +106,106 @@ src/
 
 For production, set up cron jobs to:
 
-1. **Crawl sources hourly**: `curl http://localhost:3000/api/crawl`
+1. **Crawl sources hourly**: `curl -X POST http://localhost:3000/api/crawl`
 2. **Generate analyses for new topics**: Iterate through unanalyzed topics
 
 Example cron (every hour):
 ```cron
-0 * * * * curl -s http://localhost:3000/api/crawl
+0 * * * * curl -X POST -s http://localhost:3000/api/crawl
 ```
+
+## Known Limitations & Production Readiness
+
+⚠️ **This application is currently in development and not production-ready without modifications.**
+
+### Current Limitations
+
+1. **Database**: Uses local SQLite (`newsopinions.db`) which:
+   - Will not persist on serverless platforms (Vercel, Netlify)
+   - Does not support horizontal scaling
+   - Requires migration to managed database for production
+
+2. **No Authentication/Authorization**:
+   - All API routes are publicly accessible
+   - No rate limiting implemented
+   - Recommended: Add authentication layer before production deployment
+
+3. **External Fetch Security**:
+   - RSS/HTML crawling has basic timeout protection (10s)
+   - No SSRF protection if URLs become user-controlled
+   - Content sanitization is basic (cheerio text extraction only)
+
+4. **Error Handling**:
+   - Improved logging and error handling added for AI parsing and crawling
+   - Production deployments should integrate proper observability (e.g., Sentry)
+
+### Recent Security & Reliability Improvements
+
+✅ **API Security**: All mutating endpoints changed from GET to POST
+✅ **Input Validation**: Added validation on API inputs (e.g., topicId)
+✅ **Timeout Protection**: 10-second timeouts on all external HTTP requests
+✅ **Error Logging**: Comprehensive logging for AI parsing failures and crawl errors
+✅ **Lazy Initialization**: Database initialization moved from module-load to on-demand
+✅ **Type Safety**: Enhanced type checking in AI response parsing
+
+### Recommended for Production
+
+Before deploying to production, implement:
+
+1. **Database Migration**:
+   - Migrate to managed database (Vercel Postgres, PlanetScale, Turso, Supabase)
+   - Add migration scripts and backup strategy
+
+2. **Authentication**:
+   - Add authentication middleware (NextAuth.js, Clerk, etc.)
+   - Protect all mutating API routes
+   - Implement CSRF protection
+
+3. **Rate Limiting**:
+   - Add rate limiting to API routes (e.g., using Upstash Redis)
+   - Implement per-IP and per-user limits
+
+4. **Observability**:
+   - Integrate error tracking (Sentry, LogRocket)
+   - Add performance monitoring
+   - Set up alerting for failures
+
+5. **Content Security**:
+   - Add HTML sanitization library (e.g., DOMPurify) for stored content
+   - Implement Content Security Policy headers
+   - Validate and sanitize all external URLs
+
+6. **Testing**:
+   - Add integration tests for API routes
+   - Add unit tests for crawler and orchestrator
+   - Implement CI/CD pipeline
 
 ## Deployment
 
-### Vercel
+### Vercel (Development Only)
 
 1. Push to GitHub
 2. Import to Vercel
 3. Add `ANTHROPIC_API_KEY` environment variable
 4. Deploy
 
-Note: SQLite database won't persist on Vercel. For production, migrate to:
-- Vercel Postgres
-- PlanetScale
-- Turso
+**Note**: SQLite database won't persist on Vercel. For production, migrate to a managed database first.
+
+### Production Deployment
+
+For production deployments:
+
+1. Choose a managed database:
+   - **Vercel Postgres** - Integrated with Vercel
+   - **PlanetScale** - MySQL-compatible, serverless
+   - **Turso** - SQLite-compatible, edge-distributed
+   - **Supabase** - PostgreSQL with real-time capabilities
+
+2. Update database connection in `src/lib/database.ts`
+3. Add authentication and rate limiting
+4. Configure environment variables
+5. Set up monitoring and alerts
+6. Deploy to your platform of choice
 
 ## Customization
 

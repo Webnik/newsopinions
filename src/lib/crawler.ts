@@ -3,7 +3,33 @@ import * as cheerio from 'cheerio';
 import Parser from 'rss-parser';
 import db, { Source, Opinion } from './database';
 
-const parser = new Parser();
+const parser = new Parser({
+  timeout: 10000, // 10 second timeout for RSS parsing
+  maxRedirects: 3,
+});
+
+// Fetch with timeout helper
+async function fetchWithTimeout(url: string, timeoutMs: number = 10000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'NewsOpinions/1.0 (Opinion Aggregator)',
+      },
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Request timeout after ${timeoutMs}ms`);
+    }
+    throw error;
+  }
+}
 
 // Sample opinion sources (in production, this would be configurable)
 export const defaultSources: Omit<Source, 'created_at'>[] = [
@@ -76,11 +102,20 @@ export function getAllSources(): Source[] {
 
 // Crawl RSS feed for a source
 export async function crawlRSSFeed(source: Source): Promise<Opinion[]> {
-  if (!source.feed_url) return [];
+  if (!source.feed_url) {
+    console.warn(`[Crawler] Source ${source.id} has no feed_url configured`);
+    return [];
+  }
 
   try {
+    console.log(`[Crawler] Starting RSS crawl for ${source.name} (${source.feed_url})`);
     const feed = await parser.parseURL(source.feed_url);
     const opinions: Opinion[] = [];
+
+    if (!feed.items || feed.items.length === 0) {
+      console.warn(`[Crawler] No items found in RSS feed for ${source.name}`);
+      return [];
+    }
 
     for (const item of feed.items.slice(0, 10)) {
       const id = uuidv4();
@@ -100,22 +135,38 @@ export async function crawlRSSFeed(source: Source): Promise<Opinion[]> {
       opinions.push(opinion);
     }
 
+    console.log(`[Crawler] Successfully crawled ${opinions.length} opinions from ${source.name}`);
     return opinions;
   } catch (error) {
-    console.error(`Error crawling ${source.name}:`, error);
+    console.error(`[Crawler] Error crawling RSS feed for ${source.name} (${source.feed_url}):`, error);
+    if (error instanceof Error) {
+      console.error(`[Crawler] Error details: ${error.message}`);
+    }
     return [];
   }
 }
 
 // Crawl HTML page for opinions
-export async function crawlHTMLPage(url: string): Promise<{
+export async function crawlHTMLPage(url: string, timeoutMs: number = 10000): Promise<{
   title: string;
   author: string;
   content: string;
   excerpt: string;
 }> {
   try {
-    const response = await fetch(url);
+    console.log(`[Crawler] Fetching HTML page: ${url}`);
+    const response = await fetchWithTimeout(url, timeoutMs);
+
+    if (!response.ok) {
+      console.error(`[Crawler] HTTP error ${response.status} for ${url}`);
+      return { title: '', author: '', content: '', excerpt: '' };
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (contentType && !contentType.includes('text/html')) {
+      console.warn(`[Crawler] Non-HTML content type (${contentType}) for ${url}`);
+    }
+
     const html = await response.text();
     const $ = cheerio.load(html);
 
@@ -134,9 +185,16 @@ export async function crawlHTMLPage(url: string): Promise<{
 
     const excerpt = content.slice(0, 300);
 
+    if (!title && !content) {
+      console.warn(`[Crawler] No title or content extracted from ${url}`);
+    }
+
     return { title, author, content, excerpt };
   } catch (error) {
-    console.error(`Error crawling ${url}:`, error);
+    console.error(`[Crawler] Error crawling HTML page ${url}:`, error);
+    if (error instanceof Error) {
+      console.error(`[Crawler] Error details: ${error.message}`);
+    }
     return { title: '', author: '', content: '', excerpt: '' };
   }
 }
@@ -215,15 +273,35 @@ export function getOpinionsByCategory(category: string, limit: number = 20): Opi
 // Crawl all sources
 export async function crawlAllSources(): Promise<Opinion[]> {
   const sources = getAllSources();
+
+  if (sources.length === 0) {
+    console.warn('[Crawler] No sources configured for crawling');
+    return [];
+  }
+
+  console.log(`[Crawler] Starting crawl of ${sources.length} sources`);
   const allOpinions: Opinion[] = [];
+  let successCount = 0;
+  let failureCount = 0;
 
   for (const source of sources) {
-    const opinions = await crawlRSSFeed(source);
-    for (const opinion of opinions) {
-      const stored = storeOpinion(opinion);
-      allOpinions.push(stored);
+    try {
+      const opinions = await crawlRSSFeed(source);
+      if (opinions.length > 0) {
+        successCount++;
+        for (const opinion of opinions) {
+          const stored = storeOpinion(opinion);
+          allOpinions.push(stored);
+        }
+      } else {
+        failureCount++;
+      }
+    } catch (error) {
+      failureCount++;
+      console.error(`[Crawler] Unexpected error crawling source ${source.id}:`, error);
     }
   }
 
+  console.log(`[Crawler] Crawl complete: ${successCount} sources succeeded, ${failureCount} failed, ${allOpinions.length} total opinions`);
   return allOpinions;
 }
