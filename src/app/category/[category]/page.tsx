@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import TopicCard from '@/components/TopicCard';
-import { getTopicsByCategory } from '@/lib/orchestrator';
-import db from '@/lib/database';
+import { ensureInitialized, getTopicsByCategoryWithCounts } from '@/lib/orchestrator';
 
 const validCategories = ['politics', 'tech', 'business', 'culture', 'global'];
 
@@ -35,29 +34,17 @@ interface CategoryPageProps {
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params;
 
+  // Ensure system is initialized
+  ensureInitialized();
+
   if (!validCategories.includes(category)) {
     notFound();
   }
 
   const info = categoryInfo[category];
-  const topics = getTopicsByCategory(category);
 
-  // Get additional data for each topic
-  const topicsWithData = topics.map(topic => {
-    const opinions = db.prepare(`
-      SELECT COUNT(*) as count FROM topic_opinions WHERE topic_id = ?
-    `).get(topic.id) as { count: number };
-
-    const analyses = db.prepare(`
-      SELECT COUNT(*) as count FROM agent_analyses WHERE topic_id = ?
-    `).get(topic.id) as { count: number };
-
-    return {
-      ...topic,
-      opinionsCount: opinions?.count || 0,
-      analysesCount: analyses?.count || 0,
-    };
-  });
+  // Get topics with counts (optimized - single query)
+  const topicsWithData = getTopicsByCategoryWithCounts(category);
 
   const badgeClass = `badge-${category}`;
 

@@ -1,30 +1,13 @@
 import Link from 'next/link';
 import TopicCard from '@/components/TopicCard';
-import { ensureInitialized, getAllTopics } from '@/lib/orchestrator';
-import db from '@/lib/database';
+import { ensureInitialized, getAllTopicsWithCounts } from '@/lib/orchestrator';
 
 export default async function HomePage() {
   // Lazy initialization - only runs once per process
   ensureInitialized();
 
-  const topics = getAllTopics();
-
-  // Get additional data for each topic
-  const topicsWithData = topics.map(topic => {
-    const opinions = db.prepare(`
-      SELECT COUNT(*) as count FROM topic_opinions WHERE topic_id = ?
-    `).get(topic.id) as { count: number };
-
-    const analyses = db.prepare(`
-      SELECT COUNT(*) as count FROM agent_analyses WHERE topic_id = ?
-    `).get(topic.id) as { count: number };
-
-    return {
-      ...topic,
-      opinionsCount: opinions?.count || 0,
-      analysesCount: analyses?.count || 0,
-    };
-  });
+  // Get topics with counts (optimized - single query)
+  const topicsWithData = getAllTopicsWithCounts();
 
   const featuredTopics = topicsWithData.filter(t => t.is_featured);
   const recentTopics = topicsWithData.filter(t => !t.is_featured);
